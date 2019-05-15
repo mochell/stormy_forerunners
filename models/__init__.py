@@ -1,4 +1,4 @@
-__all__ = ["JONSWAP_gamma"]
+__all__ = ["JONSWAP_gamma", "gaussian_gamma",  "JONSWAP_gamma", "shape_models"]
 
 #import stormrecon as stormrecon
 #import tools as tools
