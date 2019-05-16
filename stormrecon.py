@@ -839,34 +839,7 @@ class Storm(object):
     #    local_slope=self.slope_to_dfdt_normalized()
     #    return t0_in_norm* local_slope/(local_slope-1)
 
-    def bell_curve_2d(self,verbose=False):
-        from scipy.signal import tukey
-        time=self.time_dict['normalized']
-        freq_decay=.4
 
-        ff, _ =np.meshgrid(tukey(self.f.size,freq_decay), time)
-        ll=np.vstack((self.geo['bound_l'], self.geo['bound_r']))
-        tt_move=np.logical_and(np.zeros(time.size), True)
-        tt_base=np.zeros(time.size)
-        dt=int(np.diff(time).mean())
-        for fi in range(self.f.size):
-            ll_norm=self.normalize_time_unit([ll[:,fi][0]-dt, ll[:,fi][1]+dt])
-            tpos=M.cut_nparray(time,ll_norm[0], ll_norm[1])
-            hann=np.hanning(tpos.sum())**(1/2)#**2
-            tt_local=np.zeros(time.size)
-            tt_local[tpos]=hann
-
-            tt_move=np.vstack((tt_move, tt_local))
-        tt_move=np.delete(tt_move, 0,0)
-
-        if verbose:
-            plt.subplot(131)
-            plt.contour(time, self.f, tt_move)
-            plt.subplot(132)
-            plt.contour(time, self.f, ff.T)
-            plt.subplot(133)
-            plt.contour(time, self.f, tt_move*ff.T, colors='green')
-        return tt_move*ff.T
 
     def substract_plain_simple(self, datasub=None, verbose=False):
         import brewer2mpl
@@ -1109,6 +1082,104 @@ class Storm(object):
             plt.plot(f,np.nanmean(datasub,0 ) )
         return masked_data
 
+
+    def bell_curve_2d(self,verbose=False, freq_decay=.4):
+        from scipy.signal import tukey
+        time=self.time_dict['normalized']
+
+
+        ff, _ =np.meshgrid(tukey(self.f.size,freq_decay), time)
+        ll=np.vstack((self.geo['bound_l'], self.geo['bound_r']))
+        tt_move=np.logical_and(np.zeros(time.size), True)
+        tt_base=np.zeros(time.size)
+        dt=int(np.diff(time).mean())
+        for fi in range(self.f.size):
+            ll_norm=self.normalize_time_unit([ll[:,fi][0]-dt, ll[:,fi][1]+dt])
+            tpos=M.cut_nparray(time,ll_norm[0], ll_norm[1])
+            hann=np.hanning(tpos.sum())**(1/2.0)#**2
+            tt_local=np.zeros(time.size)
+            tt_local[tpos]=hann
+
+            tt_move=np.vstack((tt_move, tt_local))
+        tt_move=np.delete(tt_move, 0,0)
+
+        if verbose:
+            plt.subplot(131)
+            plt.contour(time, self.f, tt_move)
+            plt.subplot(132)
+            plt.contour(time, self.f, ff.T)
+            plt.subplot(133)
+            plt.contour(time, self.f, tt_move*ff.T, colors='green')
+            plt.show()
+        return tt_move*ff.T
+
+    def create_weight(self, data, wflag='ellipse',freq_decay=0.2 , verbose= False):
+        """
+        wflag       'data', 'ellipse' or 'combined' .Flag that determines which weigthing method is used (default='ellipse')
+        """
+        if 'normalized' not in self.time_dict.keys():
+            self.normalize_time()
+
+
+
+
+        def dataweight(self, verbose=False):
+            weight=M.runningmean(self.data1d, round(1*self.data1d.size*.001) )
+            weight[np.isnan(weight)]=0
+            weight[weight <0]=0
+            self.weight1d=weight/weight.max() #/np.sqrt(np.nansum(weight**2))
+            self.weight=self.weight1d.reshape(data.shape[0],data.shape[1])
+
+            if verbose:
+                plt.contourf(self.time, self.f, self.weight.T)
+                plt.show()
+
+        def ellipseweight(self, verbose=False):
+            weight=self.bell_curve_2d(verbose=verbose, freq_decay=freq_decay)
+            # if weight.shape == data.shape:
+            #     self.weight=weight
+            #     self.weight1d=weight.reshape(data.shape[0]*data.shape[1])
+            # else:
+            weight=weight.T
+            self.weight=weight
+            self.weight1d=weight.reshape(data.shape[0]*data.shape[1])
+
+
+        if wflag == 'combined':
+            #print('combined weight')
+            dataweight(self, verbose=verbose)
+            weight_data=self.weight1d
+            weight_data2d=self.weight
+
+
+            ellipseweight(self, verbose=verbose)
+            weight_ellipse=self.weight1d
+            weight_ellipse2d=self.weight
+
+            #plt.contourf(weight_ellipse2d.T)
+
+
+            self.write_log('       (ellipse + ellipse*data)/2')
+            self.write_log('       running mean factor '+str(round(1*self.data1d.size*.001))+'data points ' )
+            self.weight1d=(weight_ellipse + weight_data *weight_ellipse)/2
+            self.weight=(weight_ellipse2d + weight_data2d *weight_ellipse2d)/2
+
+            if verbose:
+                plt.contourf(self.time, self.f, self.weight.T)
+
+        elif wflag == 'data':
+            #print('data weight')
+            dataweight(self, verbose=verbose)
+            self.weight=self.weight
+            self.weight1d=self.weight1d
+
+        elif wflag == 'ellipse':
+            #print('ellipse weight')
+            ellipseweight(self, verbose=verbose)
+            self.weight=self.weight
+            self.weight1d=self.weight1d
+
+
     def fit_model(self,params,ttype='JONSWAP_gamma', datasub=None , wflag='ellipse', model='least_squares',
                   error_estimate=None, error_N=None,error_workers=None, error_nwalkers=None,  prior=None, set_initial=True,
                   error_opt=None):
@@ -1167,8 +1238,6 @@ class Storm(object):
             self.write_log('used prescibed data')
 
 
-
-
         self.write_log('used residual model: '+ttype)
         if ttype == 'JONSWAP_gamma':
             import model_gamma_JONSWAP as minmodel
@@ -1177,7 +1246,7 @@ class Storm(object):
             model_residual_func=minmodel.residual_JANSWAP_gamma
             minimizer_fcn_kws={'data':datasub, 'eps':None}
             self.model_residual_func=model_residual_func
-
+            self.minmodel           = minmodel
         elif ttype == 'JONSWAP_gamma_regularization':
             import model_gamma_JONSWAP as minmodel
             time=self.time_dict['normalized']
@@ -1188,6 +1257,7 @@ class Storm(object):
             else:
                 raise Warning('JONSWAP_gamma_regularization Model requires a prior dictionary (set option as prior=prior_dict)' )
             self.model_residual_func=model_residual_func
+            self.minmodel           = minmodel
 
         elif ttype == 'JONSWAP_gamma_regularization_acc':
             import model_gamma_JONSWAP as minmodel
@@ -1199,6 +1269,19 @@ class Storm(object):
             else:
                 raise Warning('JONSWAP_gamma_regularization Model requires a prior dictionary (set option as prior=prior_dict)' )
             self.model_residual_func=model_residual_func
+            self.minmodel           = minmodel
+
+        elif ttype == 'gaussian_gamma':
+            import models.gaussian_gamma as minmodel
+            time=self.time_dict['normalized']
+            if prior is not None:
+                self.prior = prior
+            else:
+                self.prior = None
+            minimizer_fcn_kws = {'data':datasub, 'eps':None, 'prior':self.prior}
+            model_residual_func=minmodel.cost
+            self.model_residual_func= model_residual_func
+            self.minmodel           = minmodel
         else:
             raise Exception("model type is not correct defined")
 
@@ -1212,52 +1295,17 @@ class Storm(object):
         self.nan_track=np.isnan(self.data1d)
 
         self.write_log('used weight model: '+wflag)
-
-        def dataweight(self):
-            weight=M.runningmean(self.data1d, round(1*self.data1d.size*.001) )
-            weight[np.isnan(weight)]=0
-            weight[weight <0]=0
-            self.weight1d=weight/weight.max() #/np.sqrt(np.nansum(weight**2))
-            self.weight=self.weight1d.reshape(datasub.shape[0],datasub.shape[1])
-
-        def ellipseweight(self):
-            weight=self.bell_curve_2d()
-            if weight.shape == datasub.shape:
-                self.weight=weight
-                self.weight1d=weight.reshape(datasub.shape[0]*datasub.shape[1])
-            else:
-                weight=weight.T
-                self.weight=weight
-                self.weight1d=weight.reshape(datasub.shape[0]*datasub.shape[1])
-
-        if wflag == 'combined':
-            #print('combined weight')
-            dataweight(self)
-            weight_data=self.weight1d
-            weight_data2d=self.weight
-
-            ellipseweight(self)
-            weight_ellipse=self.weight1d
-            weight_ellipse2d=self.weight
-
-            self.write_log('       (ellipse + ellipse*data)/2')
-            self.write_log('       running mean factor '+str(round(1*self.data1d.size*.001))+'data points ' )
-            self.weight1d=(weight_ellipse + weight_data *weight_ellipse)/2
-            self.weight=(weight_ellipse2d + weight_data2d *weight_ellipse2d)/2
-
-        elif wflag == 'data':
-            #print('data weight')
-            dataweight(self)
-
-        elif wflag == 'ellipse':
-            #print('ellipse weight')
-            ellipseweight(self)
+        self.create_weight( datasub, wflag=wflag , freq_decay=0.1, verbose=False)# creates self.weight and self.weight1d
 
         lower_bound_error=1e-6#error_low.reshape(datasub.shape[0]*datasub.shape[1])
         #self.Rinv=1/(self.weight1d+lower_bound_error*1)
         #self.weight_sum=(1*self.weight1d*self.weight_data1d+lower_bound_error*1)
         self.weight_sum=(1*self.weight1d+lower_bound_error)#*self.weight_data1d+lower_bound_error*1)
-        minimizer_fcn_kws['weight']=self.weight_sum
+        self.weight_sum2d=(1*self.weight+lower_bound_error)#*self.weight_data1d+lower_bound_error*1)
+
+        #minimizer_fcn_kws['weight']=self.weight_sum
+        minimizer_fcn_kws['weight']=self.weight_sum2d
+
         #self.weight_sum=self.weight_sum/self.weight_sum.sum()
         #print(self.weight_sum.shape)
         #print(self.weight_data1d)
@@ -1265,13 +1313,25 @@ class Storm(object):
 
         # Fit model
         #print(datasub.shape, Rinv.shape, time.shape, self.f.shape) #least_squares lbfgsb tnc  'propagate''  differential_evolution
+        # print(model_residual_func )
+        # params.pretty_print()
+        # print(time.shape, self.f.shape)
+        # minimizer_fcn_kws['weight']=None
+        # for k,I in minimizer_fcn_kws.iteritems():
+        #     if I is np.array:
+        #         print(k,I.shape)
+        #     else:
+        #         print(k,I, type(I))
+        #
+        # print('---')
+
         mini=Minimizer(model_residual_func, params,fcn_args=(time, self.f,),
                             fcn_kws=minimizer_fcn_kws, nan_policy='omit')
-        #self.mini=mini
+
         self.write_log('used minimizer model: '+model)
         if model == 'least_squares':
             self.fitter = mini.minimize(method=model,
-                                jac='3-point', verbose=0, ftol=1e-15, xtol=1e-12, diff_step=10)#, reduce_fcn=reduce_fct)#, fcn_args=args, fcn_kws=kws,
+                                jac='3-point', verbose=1, ftol=1e-15, xtol=1e-14)# , diff_step=1)#, reduce_fcn=reduce_fct)#, fcn_args=args, fcn_kws=kws,
             #mini.params['slope']
                                #iter_cb=iter_cb, scale_covar=scale_covar, **fit_kws)
             #self.fitter = minimize(model_residual_func, params,method=model, args=(time, self.f,),
@@ -1392,8 +1452,8 @@ class Storm(object):
             init_pos=None
 
         else:
-            init_pos=None
             seed=None
+            init_pos=None
 
         print('seed is '+ str(seed) )
         params=copy.deepcopy(self.fitter.params)
@@ -1424,12 +1484,13 @@ class Storm(object):
         """
         Create fitting statistics
         """
-        from model_gamma_JONSWAP import Jm_regulizer
+        Jm_regulizer = self.minmodel.Jm_regulizer
+
         a                   = abs(M.nannormalize(self.fitter.residual))
         max3                = list(a[a.argsort()[::-1][0:3]])
 
         J_D_sqr             = np.sum( self.fitter.residual**2 ) # does only include data-model
-        if hasattr(self, 'prior'):
+        if hasattr(self, 'prior') and (self.prior is not None):
             J_M_sqr           = sum( [i**2 for i in Jm_regulizer(self.fitter.params.valuesdict(), self.prior)] ) # does only include data-model
             error_mean_model  = J_M_sqr / float(len(self.prior))
         else:
@@ -1493,7 +1554,7 @@ class Storm(object):
         import brewer2mpl
         import string
 
-        if hasattr(self, 'fitter_error'):
+        if hasattr(self, 'fitter_error') and (self.fitter_error is not False):
             fitter=self.fitter_error
         else:
             fitter=self.fitter
@@ -2283,7 +2344,7 @@ class Storm(object):
         else:
             s=[ "slope (time_unit/sec)", "Initial Time (time_unit)",  "Initial Time Peak([])", "Storms time delta", "Stroms geo t0"]
             SM_dict_pandas = pd.DataFrame({'unit':s} , index=[ 'dfdt', 't0', 't0_peak', 'DT', 'frame_t0']).T #, columns= ['units']
-            SM_dict_pandas.loc['unit'] = df2.loc['unit'].astype('category')
+            SM_dict_pandas.loc['unit'] = SM_dict_pandas.loc['unit'].astype('category')
 
         for key in self.time_dict.keys():
             if key ==  'datetime':
@@ -2300,7 +2361,7 @@ class Storm(object):
                 t0_peak  =   Dt *  intersect_adjusted  +  T0
 
                 #print(Dt , type(Dt), key)
-                if key == 'dt64':
+                if key in ['dt64','time']:
                     dfdt=    -999
                 else:
                     dfdt=    params['slope'].value / Dt
@@ -2319,7 +2380,7 @@ class Storm(object):
                         t0_std=Dt * delt0
 
 
-                        if key == 'dt64':
+                        if key in ['dt64','time']:
                             dtdf_std=-999
                         else:
                             #dTdf_std= abs(dels /(params['slope'].value**2 ))
@@ -3649,8 +3710,7 @@ class Fetch_Propability(object):
 
         self.fitter_error     = fitter_error
         self.converted_chain  = self.convert_slope_intersect_to_MS1957(self.fitter_error.flatchain['slope'], self.fitter_error.flatchain['intersect'],timeaxis)
-        self.converted_chain
-        self.data  , self.time           = self.create_rt0_propabilities(self.converted_chain, params_dict)
+        self.data  , self.time= self.create_rt0_propabilities(self.converted_chain, params_dict)
 
         self.params_dict      = params_dict
 
@@ -3659,9 +3719,9 @@ class Fetch_Propability(object):
     def plot_inital(self, save_path=False):
         F=M.figure_axis_xy(x_size=5,  y_size=5, view_scale=.5)
         plt.suptitle(self.ID +' | Initital Intersect-Slope PDF \n' +
-                ' correlation:' + str( round(S.fitter_error.params['slope'].correl['intersect'], 2)) , y=1.06)
+                ' correlation:' + str( round(self.fitter_error.params['slope'].correl['intersect'], 2)) , y=1.06)
 
-        plot_scatter_2d(self.fitter_error.flatchain['intersect'], self.fitter_error.flatchain['slope'], xname='intersect', yname='slope')
+        M.plot_scatter_2d(self.fitter_error.flatchain['intersect'], self.fitter_error.flatchain['slope'], xname='intersect', yname='slope')
 
 
         if save_path is not False:
@@ -3682,14 +3742,12 @@ class Fetch_Propability(object):
                               np.datetime64( table['t0_ns'].astype('datetime64[ns]').quantile(qlim[1]) ).astype('M8[h]'))
         xbins               =np.arange(xlim[0], xlim[1],time_resolution ).astype('M8[m]')
         #print(xbins)
-        r0_range    = np.arange(0, 60*110*1000, radial_resolution)
-
+        r0_range    = np.arange(0, 180*110*1000, radial_resolution)
         a   =r0_range-table['r0'].quantile(qlim[0])
         b   =r0_range-table['r0'].quantile(qlim[1])
 
         ylim=(r0_range[np.unravel_index(np.abs(a).argmin(),np.transpose(a.shape))],  r0_range[np.unravel_index(np.abs(b).argmin(),np.transpose(b.shape))] )
         ybins=np.arange(ylim[0], ylim[1], radial_resolution)
-        #print(ybins)
         h=np.histogram2d(table['t0'].astype(int) ,table['r0'], bins=(xbins.astype('datetime64[ns]').astype(int), ybins) )
 
         if xarray:

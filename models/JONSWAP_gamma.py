@@ -1,13 +1,13 @@
-
-if __name__ == '__main__':
-
-    execfile(os.environ['PYTHONSTARTUP'])
-    execfile(STARTUP_IG2018)
-
-    %matplotlib inline
-
-
 import sys, imp
+
+
+#if __name__ == '__main__':
+
+    #execfile(os.environ['PYTHONSTARTUP'])
+    #execfile(STARTUP_IG2018)
+    #%matplotlib inline
+
+
 #import pickle
 #from lmfit import minimize, Parameters
 
@@ -147,7 +147,6 @@ def JONSWAP_default(f, X=5e5, U=15, gamma=3.3):
 
 """ add function for X_tilde(X, U10), alpha(f_max, U10) and f_max(U10, X_tilde) or f_max(U, X)"""
 
-<<<<<<< HEAD
 g=9.81
 
 def X_tilde(X, U10):
@@ -159,8 +158,6 @@ def alpha(f_max, U10):
 def f_max(U10, X):
     return 3.5*g/U10*X_tilde(X,U10)**(-0.33)
 
-=======
->>>>>>> df6f05f0b26c55c06e21ad03ea2f3b6ea8fe09c5
 
 # %%
 if __name__ == '__main__':
