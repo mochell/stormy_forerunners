@@ -125,12 +125,13 @@ def pickle_load(name, path, verbose=True):
 
 def json_save(name, path, data, verbose=False, return_name=False):
     import json
+    #import simplejson as json
     if not os.path.exists(path):
         os.makedirs(path)
     full_name_root=os.path.join(path,name)
     full_name= (os.path.join(full_name_root+ '.json'))
     with open(full_name, 'w') as outfile:
-        json.dump(data, outfile)
+        json.dumps(data, outfile)
     if verbose:
         print('save at: ',full_name)
     if return_name:
