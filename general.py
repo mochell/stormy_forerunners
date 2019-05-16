@@ -1,3 +1,5 @@
+import numpy as np
+
 class plot_spectrogram(object):
 
             def __init__(self,time,fs, data,clevs=None, sample_unit=None, data_unit=None,
@@ -578,6 +580,7 @@ class subplot_routines(figure_axis_xy):
             self.ax=ax
 
 def runningmean(var, m, tailcopy=False):
+    import numpy as np
     m=int(m)
     s =var.shape
     if s[0] <= 2*m:
@@ -854,6 +857,7 @@ def find_max_ts(data_org, threshold=None, jump=None, smooth=True, spreed=None, p
                 index           all indexes without the jump condition
 
     """
+    import numpy as np
     if nocopy:
         data=data_org
     else:
@@ -918,3 +922,27 @@ def find_max_ts(data_org, threshold=None, jump=None, smooth=True, spreed=None, p
             print('index, edited ts, edit ts (index), org_index')
 
         return b, data, data[b], index
+
+def plot_scatter_2d(intersect_chain, slope_chain, xname='intersect', yname='slope'):
+
+    from matplotlib import colors
+    import matplotlib.pyplot as plt
+    #col.colormaps(20)
+
+    xbins=np.linspace(intersect_chain.quantile(.025),intersect_chain.quantile(.975), 30)
+    xlim=(xbins[0], xbins[-1])
+    ybins=np.linspace(slope_chain.quantile(.025), slope_chain.quantile(.975), 30)
+    ylim=(ybins[0], ybins[-1])
+
+    S1 = plt.subplot2grid((3,3), (0, 0),facecolor='white', colspan=1, rowspan=2)
+
+    H=plt.hist(slope_chain, ybins, orientation='horizontal')
+    plt.gca().invert_xaxis()
+    plt.ylabel(yname)
+    S2 = plt.subplot2grid((3,3), (0, 1),facecolor='white', colspan=2, rowspan=2)
+    #col.white_base_bluegreen
+    H=plt.hist2d(list(intersect_chain), list(slope_chain) , bins=(xbins, ybins), norm=colors.LogNorm(),cmap = plt.cm.BuGn)
+
+    S2 = plt.subplot2grid((3,3), (2, 1),facecolor='white', colspan=2, rowspan=1)
+    H=plt.hist(intersect_chain, xbins)
+    plt.xlabel(xname)
