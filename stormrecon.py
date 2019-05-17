@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/Users/laure/Desktop/stage San Diego/travail/2019_swell_NP/modules/stormy_forerunners/')
+sys.path.append('/Users/laure/Desktop/stage/travail/modules/stormy_forerunners/')
 
 import matplotlib
 import matplotlib.pyplot as plt
