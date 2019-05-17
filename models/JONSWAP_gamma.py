@@ -1,16 +1,14 @@
+if __name__ == '__main__':
+    execfile(os.environ['PYTHONSTARTUP'])
+    execfile(STARTUP_IG2018)
+
 import sys, imp
-
-
-#if __name__ == '__main__':
-
-    #execfile(os.environ['PYTHONSTARTUP'])
-    #execfile(STARTUP_IG2018)
-    #%matplotlib inline
-
-
 #import pickle
-#from lmfit import minimize, Parameters
-
+from lmfit import minimize, Parameters
+import copy
+        
+import matplotlib.pyplot as plt
+import numpy as np
 
 # %%
 def normalize_time(time):
@@ -175,7 +173,7 @@ if __name__ == '__main__':
 
 # %%
 
-def gamma_time_JONSWAO_default(time, f,
+def gamma_time_JONSWAP_default(time, f,
                    slope_t, intersectT,
                    tgammapar, tscale,
                     f_max=0.04,
@@ -262,8 +260,254 @@ if __name__ == '__main__':
     tgammapar0=2
     tscale0=.1
 
-    model_func =gamma_time_JONSWAO_default(time, f, slope0, intersect0, tgammapar0, tscale0, plot=True)
+    model_func =gamma_time_JONSWAP_default(time, f, slope0, intersect0, tgammapar0, tscale0, plot=True)
 #plt.contour(tt, ff, fake_data, colors='k')
+
+
+
+# %% build residual
+def residual_JONSWAP_default_gamma(value_dict, time, f, data=None, weight=None, eps=None):
+    """
+    derived the residual between model and data given params_local.
+
+    inputs:
+    value_dict         dictionary with parameters, or lmfit.parameters instance.
+                       contains all parameters that are needed for creating the model.
+    time               time axis
+    f                  frequency axis
+    data               data, same shape as time and f, if None function returns model as a 1d vector.
+    weight             weigthing for each of the data points, can be a 1d or 2d Vector, must have the same size as data, if None, no weighting is applied
+    eps                is just a dummy
+    """
+    from lmfit import Parameters
+    from collections import OrderedDict
+
+    if type(value_dict) is Parameters:
+        vd=value_dict.valuesdict()
+    elif (type(value_dict) is dict) | (type(value_dict) is OrderedDict):
+        vd=value_dict
+    else:
+        raise ValueError('value_dict is eiher a dicitionary or a Params instance')
+
+    model= vd['amp'] * gamma_time_JONSWAP_default(time, f,
+                        vd['slope'], vd['intersect'],
+                        vd['tgammapar'], vd['tscale'],
+                        vd['f_max'], vd['power_slope'], vd['power_exp'],
+                        plot=False )
+
+    #tt, tt= np.meshgrid(time, ff)
+    model1d=model.reshape(model.shape[0]*model.shape[1])
+
+
+    if data is not None:
+        if np.size(data.shape) != 1:
+            if model.shape == data.shape:
+                data1d=data.reshape(data.shape[0]*data.shape[1])
+                nan_track=np.isnan(data1d)
+            elif model.shape == data.T.shape:
+                data1d=data.T.reshape(data.T.shape[0]*data.T.shape[1])
+                nan_track=np.isnan(data1d)
+            else:
+                raise TypeError("data shape does not match")
+
+    if weight is not None:
+        if (len(weight.shape) == 1) & (model1d.size == weight.size):
+            weight1d= weight
+        elif (len(weight.shape) == 2) & (model1d.size == weight.size):
+            weight1d= weight.reshape(weight.shape[0]*weight.shape[1]).T
+        else:
+            raise ValueError('weight has not the same dimensions as model. \n' + 'data ' +str(model.shape) +  '\n weight '+str(weight.shape) )
+
+
+    if data is None:
+        return model1d
+    if (weight is not None):
+        #print('use weight')
+        d=(model1d - data1d)*weight1d
+        d[nan_track]=np.nan
+        return d
+    if (weight is None) and (data is not None):
+        d= model1d - data1d
+        d[nan_track]=np.nan
+        return d
+
+if __name__ == '__main__':
+    #http://cars9.uchicago.edu/software/python/lmfit/fitting.html
+    params=Parameters()
+
+    params.add('slope', value= slope0, min=slope0*.1 , max=slope0*10)
+    params.add('intersect', value= intersect0, min=-0.5, max=.5)
+
+    #params.add('tamp', value= tamp0, min=0., max=1)
+    params.add('tgammapar', value= tgammapar0, min=0.0001, max=4)
+    params.add('tscale', value= tscale0, min=0, max=.1)
+
+    params.add('f_max', value= 0.01, min=0., max=.1)
+    params.add('power_slope', value= 2, min=0.1, max=25)
+    params.add('power_exp', value= 2, min=0.1, max=4)
+
+    params.add('amp', value= 1, min=1e-4, max=1e2)
+
+if __name__ == '__main__':
+
+    # %% should return model:
+    model1d = residual_JONSWAP_default_gamma(params, time, f)
+    M.figure_axis_xy(3, 6)
+
+    plt.subplot(2, 1, 1)
+    plt.plot(model1d)
+
+    plt.subplot(2, 1, 2)
+    plt.contourf(time, f, model1d.reshape(time.size, f.size).T)
+
+    # %% should return the residual
+    resid1d = residual_JONSWAP_default_gamma(params, time, f, data=fake_data)
+
+    M.figure_axis_xy(3, 6)
+
+    plt.subplot(2, 1, 1)
+    plt.plot(resid1d)
+
+    plt.subplot(2, 1, 2)
+    plt.contour(time, f, fake_data, colors='k')
+    plt.contourf(time, f, resid1d.reshape(time.size, f.size).T)
+
+    # %% should return the residual weighted residual
+    weightdummy=(fake_data*0+2)
+    len(weightdummy.shape)
+    weightdummy.size
+    len(fake_data.shape)
+    fake_data.size
+    weightdummy.shape
+
+    # %%
+    weightdummy =100.0 * np.random.random(fake_data.shape)#.reshape(fake_data.shape[0]*fake_data.shape[1] )
+    resid1d_weight = residual_JONSWAP_default_gamma(params, time, f, data=fake_data, weight=weightdummy )
+
+    M.figure_axis_xy(3, 6)
+
+    plt.subplot(2, 1, 1)
+    plt.plot(resid1d)
+    plt.plot(resid1d_weight, alpha=0.4)
+
+    plt.subplot(2, 1, 2)
+    plt.contour(time, f, fake_data, colors='k')
+    plt.contourf(time, f, resid1d_weight.reshape(time.size, f.size).T)
+
+
+    
+# %%
+def Jm_regulizer(value_dict, prior):
+    """
+    returns a Model cost function as list. each item is the cost for each prior given the parameter value in value_dict
+
+    value_dict  is a dict with all values that need to be regulized, can be standard dict or Parameter instance
+    prior       is a dict with all priors for this dict
+
+    """
+
+    from lmfit import Parameters
+    from collections import OrderedDict
+
+
+    if type(value_dict) is Parameters:
+        vd=value_dict.valuesdict()
+    elif (type(value_dict) is dict) | (type(value_dict) is OrderedDict):
+        vd=value_dict
+    else:
+        raise ValueError('value_dict is eiher a dicitionary or a Params instance')
+
+    Jm=list()
+    for k,I in prior.iteritems():
+        if type(I['m_err']) is float:
+            Jm.append(    (I['m0']- vd[k] ) / I['m_err']    )
+        else:
+            if value_dict[k] >= I['m0']:
+                Jm.append( (I['m0']- vd[k] ) / I['m_err'][1] )
+            else:
+                Jm.append( (I['m0']- vd[k] ) / I['m_err'][0] )
+    return Jm
+
+
+if __name__ == '__main__':
+    #test Jm_regulizer with priors
+    # create face priors
+    prior_errors={'slope': 1.0, 'intersect':.2,
+            'tgammapar':.4, 'tscale':0.2,
+            'f_max':0.01 ,
+             'power_slope':2.0 , 'power_exp':2.0 ,
+             'amp': 10.0
+             }
+
+    priors=dict()
+    for k,I in prior_errors.iteritems():
+        priors[k]={'m_err':I, 'm0':params[k].value}
+
+    # fake parameters
+    vd=copy.copy(params.valuesdict())
+    for k,I in vd.iteritems():
+        vd[k]= I *np.random.rand()
+
+    Jm =Jm_regulizer(vd , priors)
+    print(Jm)
+
+
+# %%
+def cost(value_dict, time, f, data=None, weight=None, prior=None, eps=None):
+    """
+    Wrapper around residual and regulizer.
+
+    returns 1d cost vector
+
+    eps is just a dummy
+    """
+    from lmfit import Parameters
+
+    Jd = residual_JONSWAP_default_gamma(value_dict, time, f, data=data, weight=weight)
+
+    if prior is not None:
+
+        # if type(value_dict) is Parameters:
+        #     vd=value_dict.valuesdict()
+        # elif type(value_dict) is dict:
+        #     vd=value_dict
+        # else:
+        #     raise ValueError('value_dict is eiher a dicitionary or a Params instance')
+
+        Jm = Jm_regulizer( value_dict, prior)
+        return np.concatenate(( Jd, Jm ))
+    else:
+        return Jd
+
+
+# %% test cost
+if __name__ == '__main__':
+
+    cost1d_weight = cost(params, time, f, data=fake_data, weight=None, prior=None )
+
+    M.figure_axis_xy(3, 6)
+
+    plt.subplot(2, 1, 1)
+    plt.plot(resid1d)
+    plt.plot(resid1d_weight, alpha=0.4)
+
+    plt.subplot(2, 1, 2)
+    plt.contour(time, f, fake_data, colors='k')
+    plt.contourf(time, f, cost1d_weight.reshape(time.size, f.size).T)
+
+    # %%
+    cost1d_weight = cost(vd, time, f, data=fake_data, weight=None, prior= priors)
+
+
+
+
+
+
+
+
+
+
+
 
 # %% build residual
 # def residual_JANSWAP_gamma(params_local, time, f, data=None, eps=None, weight=None):
