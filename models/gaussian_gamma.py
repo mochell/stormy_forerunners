@@ -11,7 +11,7 @@
 #     #import pickle
 #     from lmfit import minimize, Parameters
 #     import copy
-
+import matplotlib.pyplot as plt
 import numpy as np
 
 # %%
@@ -57,7 +57,9 @@ def gamma_time_normlized_amp(time, gammapar=2, loc=.2, scale=0.1):
 
 if __name__ == '__main__':
     plt.plot(time, gamma_time_normlized_amp(time))
-    plt.plot(time, gamma_time_normlized_amp(time, gammapar=7.0, loc=.2, scale=0.07) )
+    plt.plot(time, gamma_time_normlized_amp(time, gammapar=1, loc=.2, scale=0.03) )
+
+
 
 
 # %% Exponentially modified Gaussian distribution

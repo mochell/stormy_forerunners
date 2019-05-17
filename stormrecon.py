@@ -781,11 +781,18 @@ class Storm(object):
             #store['time_dict']=self.S.time_dict
             #del self.SM_dict_pandas
 
-        savedict=self.__dict__
-        deletelist=['weight_data2d', 'weight_data1d', 'weight','weight1d', 'model_init', 'data1d', 'mask_full']
-        for key in deletelist:
-            if key in savedict:
-                del savedict[key]
+        #savedict=self.__dict__
+        #print(savedict)
+        savekeys=self.__dict__.keys()
+        savekyes_less= list(set(savekeys) - set(['weight_data1d', 'weight','weight1d', 'data1d', 'mask_full', 'minmodel']))
+        savedict=dict()
+        for k in savekyes_less:
+            savedict[k]=self.__dict__[k]
+
+        #deletelist=['weight_data1d', 'weight','weight1d', 'data1d', 'mask_full', 'minmodel']
+        #for key in deletelist:
+        #    if key in savedict:
+        #        del savedict[key]
 
         MT.pickle_save(self.ID,save_path, savedict, verbose=verbose)
         save_list=[self.hist]
@@ -793,9 +800,14 @@ class Storm(object):
             from lmfit import Parameters
             params=Parameters()
             #print('fit dict!!')
+            for k,I in self.fit_dict.iteritems():
+                if type(I) is bool:
+                    I=str(I)
+
             save_list.append(self.fit_dict)
             #MT.json_save(self.ID,save_path, [self.hist, self.fit_dict], verbose=verbose)
             self.fitter.params.dump(open(save_path+self.ID+'.fittedparrms.json', 'w'))
+
 
         MT.json_save(self.ID,save_path,save_list, verbose=verbose)
         MT.save_log_txt(self.ID,save_path, self.hist,  verbose=verbose)
@@ -1180,7 +1192,7 @@ class Storm(object):
             self.weight1d=self.weight1d
 
 
-    def fit_model(self,params,ttype='JONSWAP_gamma', datasub=None , wflag='ellipse', model='least_squares',
+    def fit_model(self,params,ttype='JONSWAP_gamma', datasub=None , weight_opt=None, model='least_squares',
                   error_estimate=None, error_N=None,error_workers=None, error_nwalkers=None,  prior=None, set_initial=True,
                   error_opt=None):
 
@@ -1192,7 +1204,7 @@ class Storm(object):
         params      parameters of the model of class Parameters (lmfit module)
         ttype       flag for the model that should be used for optomatzation. The the curent state only the default works
         datasub     the data that is used for fitting.It can be masked data (np.nan)
-        wflag       'data', 'ellipse' or 'combined' .Flag that determines which weigthing method is used (default='ellipse')
+        weight_opt  determines weight model. If non set to some standard values
         model       argument that is passed to lmfit.Minimizer.
         error_estimate  None or list of parameter names for which an error estimate is performed. If None no error is estimated.
         error_N     number of iterations for monte-carlo-chain error estimate. (Default=500)
@@ -1240,13 +1252,18 @@ class Storm(object):
 
         self.write_log('used residual model: '+ttype)
         if ttype == 'JONSWAP_gamma':
-            import model_gamma_JONSWAP as minmodel
-            time=self.time_dict['normalized']
+            import models.JONSWAP_gamma as minmodel
 
-            model_residual_func=minmodel.residual_JANSWAP_gamma
-            minimizer_fcn_kws={'data':datasub, 'eps':None}
-            self.model_residual_func=model_residual_func
+            time=self.time_dict['normalized']
+            if prior is not None:
+                self.prior = prior
+            else:
+                self.prior = None
+            minimizer_fcn_kws = {'data':datasub, 'eps':None, 'prior':self.prior}
+            model_residual_func=minmodel.cost
+            self.model_residual_func= model_residual_func
             self.minmodel           = minmodel
+
         elif ttype == 'JONSWAP_gamma_regularization':
             import model_gamma_JONSWAP as minmodel
             time=self.time_dict['normalized']
@@ -1294,14 +1311,36 @@ class Storm(object):
         # tracking Nans in 2d array
         self.nan_track=np.isnan(self.data1d)
 
-        self.write_log('used weight model: '+wflag)
-        self.create_weight( datasub, wflag=wflag , freq_decay=0.1, verbose=False)# creates self.weight and self.weight1d
 
-        lower_bound_error=1e-6#error_low.reshape(datasub.shape[0]*datasub.shape[1])
-        #self.Rinv=1/(self.weight1d+lower_bound_error*1)
-        #self.weight_sum=(1*self.weight1d*self.weight_data1d+lower_bound_error*1)
-        self.weight_sum=(1*self.weight1d+lower_bound_error)#*self.weight_data1d+lower_bound_error*1)
-        self.weight_sum2d=(1*self.weight+lower_bound_error)#*self.weight_data1d+lower_bound_error*1)
+
+        if weight_opt is not None:
+            self.write_log('used weight model opt: \n' + str(weight_opt))
+
+            if type(weight_opt) is not dict:
+                raise ValueError('weight_opt is not a dict')
+            elif 'type' not in weight_opt:
+                weight_opt['type']='combined'
+                self.write_log('set type to standard: ' + str(weight_opt['type']))
+
+            elif 'freq_decay' not in weight_opt:
+                weight_opt['freq_decay']=0.1
+                self.write_log('set freq_decay to standard: ' + str(weight_opt['freq_decay']))
+
+            elif 'lower_bound_error' not in weight_opt:
+                weight_opt['lower_bound_error']=1e-6
+                self.write_log('set lower_bound_error to standard: ' + str(weight_opt['lower_bound_error']))
+
+            self.write_log('used residual model: '+ttype)
+        else:
+            weight_opt['type']='combined'
+            weight_opt['freq_decay']=0.1
+            weight_opt['lower_bound_error']=1e-6
+
+
+        self.create_weight( datasub, wflag=weight_opt['type'] , freq_decay=weight_opt['freq_decay'], verbose=False)# creates self.weight and self.weight1d
+
+        self.weight_sum=(1*self.weight1d+weight_opt['lower_bound_error'])#*self.weight_data1d+lower_bound_error*1)
+        self.weight_sum2d=(1*self.weight+weight_opt['lower_bound_error'])#*self.weight_data1d+lower_bound_error*1)
 
         #minimizer_fcn_kws['weight']=self.weight_sum
         minimizer_fcn_kws['weight']=self.weight_sum2d
@@ -1547,7 +1586,8 @@ class Storm(object):
         #same data std "scaler" in fit_dict
         fit_dict['factor']=self.factor
         fit_dict['max3'], fit_dict['normalized_chisqr'], fit_dict['error_frac'], fit_dict['error_frac_data'], fit_dict['error_mean_model'], fit_dict['chisqr_man'],  =self.simple_fitstats()
-
+        if 'errorbars' in fit_dict:
+            fit_dict['errorbars']= bool(fit_dict['errorbars'])
         self.fit_dict=fit_dict
 
     def plot_fitted_model(self, flim=(0.04,0.08), datasub=None, data_unit=None):

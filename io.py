@@ -28,6 +28,38 @@ def build_timestamp(time, unit, start, verbose=True): #G.time,'h','1900-01-01' )
 def stats_format(a, name=None):
 	print('Name:', str(name),'   Shape:' , a.shape ,'   NaNs:',np.sum(np.isnan(a)),' max:', np.nanmax(a),' min', np.nanmin(a),' mean:', np.nanmean(a))
 
+
+def init_from_input(arguments):
+    if (len(arguments) <= 1) | ('-f' in set(arguments) ) :
+        print('no config file found :/' )
+        STID='DR01'
+        POL='LHN'
+        params_file='test1'
+
+        print('use standard values')
+
+    else:
+
+        STID=arguments[1]
+        POL=arguments[2]
+        params_file=arguments[3]
+        #$(hemisphere) $(coords) $(config)
+
+        print('read vars from file: ' +str(arguments[3]) )
+
+    print(STID, POL, params_file)
+
+    if (len(arguments) == 5):
+        num = arguments[4]
+        print('ID number found, ID#= '+str(num) )
+
+    #ID=STID+'.'+coords+'.'+params_file
+
+    if (len(arguments) == 5):
+        return STID, POL, params_file, year
+    else:
+        return STID, POL, params_file
+
 # def grap_winds(file, startdate=None, enddate=None):
 #
 #     G=grap_file(file, startdate=startdate, enddate=enddate)
