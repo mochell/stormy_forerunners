@@ -95,16 +95,37 @@ def storm_fitter_gaussian_gamma(S, params,cont):
     else:
         S.write_log('  S.masked_data already normalized, no change to the data')
 
+
+    # 4. Choose noise model
     ###### substract plain or not
-    if cont['substract_plain_simple']:
+    if cont['noise_model'] is False:
+        masked_data=S.masked_data
+        S.masked_data_less_noise= masked_data
+        S.write_log('- no noise model applied ')
+
+    elif cont['noise_model'] is substract_plain_simple:
         masked_data=S.substract_plain(datasub=S.masked_data, verbose=False)
-        S.write_log('  substracted efolding plain')
+        S.write_log('- substracted efolding plain')
         #S.substract_plain_simple( datasub=S.data*S.factor, verbose=True)
         #S.write_log('  substracted simple plain')
         S.masked_data_less_noise= masked_data
+
+    elif cont['noise_model'] is 'lateral_boundary_noise':
+
+        masked_data = MT.lateral_boundary_noise(S.f, S.masked_data, lanzos_width=0.015,  mean_method=np.min )
+        #masked_data= S.substract_plain(datasub=S.masked_data, verbose=False)
+        S.write_log('- substracted lateral boundaries model')
+        #S.substract_plain_simple( datasub=S.data*S.factor, verbose=True)
+        #S.write_log('  substracted simple plain')
+        S.masked_data_less_noise= masked_data
+
+
     else:
+
+        raise Warning('Noise model not defined. No Noise model is applied.')
         masked_data=S.masked_data
         S.masked_data_less_noise= masked_data
+        S.write_log('- no noise model defined, no model applied ')
 
 
     S.clevs=M.clevels(masked_data)

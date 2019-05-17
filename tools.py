@@ -334,3 +334,93 @@ def stats(a):
 
 def stats_format(a, name=None):
 	print('Name:', str(name),'   Shape:' , a.shape ,'   NaNs:',np.sum(np.isnan(a)),' max:', np.nanmax(a),' min', np.nanmin(a),' mean:', np.nanmean(a))
+
+
+def lanczos_1d(width,  dx, a=2):
+    """
+    This is a 1D lanczos Filter for time series analysis.
+    it generates the Filter to be convolved with the timeseries
+    https://en.wikipedia.org/wiki/Lanczos_resampling
+    inputs:
+    width  width of the filter in units of the timeseries
+    a      Lanczos parameter (default =2). the length of the filter is a*width
+    dx     delta x of the to be filtered timeseries
+
+    returns:
+    L       Lanczos Filter with the length a*width and dx.
+
+    """
+    # width= 2   # width of the filter in units of the timeseries
+    # a=     1   # Lanczos parameter. the length of the filter is a*width
+    # dx=   .1   # deltax of the to be filtered timeseries
+
+    r=width/2.0
+    xl=a*r
+    x= np.arange(-xl, xl, dx)
+    xprime=x/r
+
+    # define the filter
+    L = np.sinc(xprime) * np.sinc(xprime/a)
+    L = np.where((xprime > -a) & (xprime < a),L, 0)
+
+    return x, L/L.sum()
+
+def lanczos_filter_1d(x, data, width, a=2 , mode='same', method='direct'):
+    """
+    colvolves the lanzcos filter with data.
+    inputs
+    x       independent variaable, dimension for data
+    data    to be smoothed data, same dimensions a x
+    width   width of the lanzos filter in dimensions of x
+    a       lanzcos parameters. default 2. Integer.
+
+    mode    passed to signal.convolve() 'full', 'valid','same'
+    method  'direct', 'fft', 'auto'
+
+    returns
+    data_lp low-passed data, same size as before.
+    """
+    import scipy.signal as signal
+    dx     =   np.diff(x).mean()
+    x , L  =    lanczos_1d(width,  dx, a=a)
+
+
+    data_lp= signal.convolve(data, L, mode=mode, method=method)#*
+
+    return data_lp
+
+
+def lateral_boundary_noise(xx, data, n=4,  lanzos_width=0.015,  mean_method=np.min):
+
+    """
+    this method creates a noise model from the first and last valid point
+    at each index in the 2nd dimennsion of a 2d array.
+    It estimates the "noise" at the lateral boundaries and returns an
+    array of shape data that only varies in the second dimension
+
+    It uses a 1d lanzcvos filter to create a low-pass field.
+
+    inputs:
+    x
+    data
+    n       number of valid gridpooints used at the boundaries
+    lanzos_width    = 0.15 width of the lanzos filter in units of x
+    mean_method     method how to derive the value at each y-index.
+                    can be np.min, np.mean, ...
+
+    return
+    data_boundary_model   array of same size as data.
+
+    """
+
+    base=list()
+    for i in np.arange(data.shape[1]):
+        ll =data[:,i]
+        aa = ll[~np.isnan(ll)][range(n) +  range(-n, 0)]
+        base.append(mean_method(aa))
+
+    a3 =lanczos_filter_1d( xx, np.array(base), lanzos_width, a=2 , mode='same', method='auto')
+
+    __ , data_lb = np.meshgrid(np.arange(data.shape[0]), a3)
+
+    return data_lb
