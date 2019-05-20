@@ -103,7 +103,7 @@ def storm_fitter_gaussian_gamma(S, params,cont):
         S.masked_data_less_noise= masked_data
         S.write_log('- no noise model applied ')
 
-    elif cont['noise_model'] is substract_plain_simple:
+    elif cont['noise_model'] is 'substract_plain_simple':
         masked_data=S.substract_plain(datasub=S.masked_data, verbose=False)
         S.write_log('- substracted efolding plain')
         #S.substract_plain_simple( datasub=S.data*S.factor, verbose=True)
@@ -122,7 +122,7 @@ def storm_fitter_gaussian_gamma(S, params,cont):
 
     else:
 
-        raise Warning('Noise model not defined. No Noise model is applied.')
+        #raise Warning('Noise model not defined. No Noise model is applied.')
         masked_data=S.masked_data
         S.masked_data_less_noise= masked_data
         S.write_log('- no noise model defined, no model applied ')

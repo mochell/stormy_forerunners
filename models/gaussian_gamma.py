@@ -1,15 +1,11 @@
-
 if __name__ == '__main__':
+    execfile(os.environ['PYTHONSTARTUP'])
+    execfile(STARTUP_IG2018)
 
-     execfile(os.environ['PYTHONSTARTUP'])
-     execfile(STARTUP_IG2018)
-
-     %matplotlib inline
-
-     import sys, imp
-     #import pickle
-     from lmfit import minimize, Parameters
-     import copy
+import sys, imp
+#import pickle
+from lmfit import minimize, Parameters
+import copy
         
 import matplotlib.pyplot as plt
 import numpy as np
