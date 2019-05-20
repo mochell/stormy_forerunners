@@ -4,7 +4,7 @@
 #     execfile(os.environ['PYTHONSTARTUP'])
 #     execfile(STARTUP_IG2018)
 #
-#     %matplotlib inline
+#%matplotlib inline
 #
 #
 #     import sys, imp
@@ -131,20 +131,21 @@ def PM_IG_normalized(f,fp , n1=5.0, n2=4.0):
     a=(2* np.pi *f )**(-n1) *np.exp(-5./4. * (f/fp)**-n2)
     a[np.isnan(a)]=0
     a=a/np.nanmax(a)
-    return  a #
+    return  a
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
 
-    f2=np.arange(0, .1 ,0.001)[1:]
+    # # %%
+    # f2=np.arange(0, .1 ,0.001)[1:]
+    #
+    # a= PM_IG_normalized(f2, 0.03 , 4, 5)
+    # plt.plot(f2, a/np.nanmax(a), 'b')
+    #
+    # b= PM_IG_normalized(f2, 0.03 , 4 ,5)
+    # plt.plot(f2, b, 'r')
+    # # %%
 
-    a= PM_IG(f2, 0.06 , 1, 5, 4)
-    plt.plot(f2, a/np.nanmax(a))
 
-    b= PM_IG_normalized(f2, 0.005 , 1, 2)
-    plt.plot(f2, b, 'r')
-
-
-# %%
 
 def gamma_time_PM_IG(time, f,
                     slope_t, intersectT,

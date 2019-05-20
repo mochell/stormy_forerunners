@@ -131,7 +131,7 @@ def json_save(name, path, data, verbose=False, return_name=False):
     full_name_root=os.path.join(path,name)
     full_name= (os.path.join(full_name_root+ '.json'))
     with open(full_name, 'w') as outfile:
-        json.dumps(data, outfile)
+        json.dump(data, outfile)
     if verbose:
         print('save at: ',full_name)
     if return_name:
@@ -424,3 +424,18 @@ def lateral_boundary_noise(xx, data, n=4,  lanzos_width=0.015,  mean_method=np.m
     __ , data_lb = np.meshgrid(np.arange(data.shape[0]), a3)
 
     return data_lb
+
+
+def top_bottom_tap(datax,  mean_method=np.nanmean):
+    """
+    return a simple sloped surface in y defined by the mean of the lower and upper boundary
+    """
+
+    lowb =mean_method(datax[0, :])
+    highb = mean_method(datax[-1, :])
+
+    ll =np.linspace(lowb, highb, datax.shape[0] )
+
+    __ , data_lb2 = np.meshgrid(np.arange(datax.shape[1]), ll)
+
+    return data_lb2
