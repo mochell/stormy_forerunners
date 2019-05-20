@@ -1,4 +1,3 @@
-
 #if __name__ == '__main__':
 #
 #     execfile(os.environ['PYTHONSTARTUP'])
@@ -198,6 +197,8 @@ def gamma_time_PM_IG(time, f,
     #print(func_t.shape)
 
     """ Define X(f_max and U) here """
+    def X(f_max, U10):
+        return 3.5**3*g**2/U10/f_max**3
 
 
     func_freq_temp= PM_IG_normalized(f, f_max,  power_slope, power_exp)
@@ -238,6 +239,22 @@ if __name__ == '__main__':
 
     model_func =gamma_time_PM_IG(time, f2, slope0, intersect0, tgammapar0, tscale0, f_max=0.01, power_slope = 2, power_exp = 2, plot=True)
     #plt.contour(tt, ff, fake_data, colors='k')
+
+    
+# %%    
+g=9.81
+
+def X_tilde(X, U10):
+    return g*X/U10**2
+
+def alpha(f_max, U10):
+    return 0.033*(f_max*U10/g)**0.67
+
+def f_max(U10, X):
+    return 3.5*g/U10*X_tilde(X,U10)**(-0.33)
+# %%
+
+
 
 # %% build residual
 def residual_PM_IG_gamma(value_dict, time, f, data=None, weight=None, eps=None):
