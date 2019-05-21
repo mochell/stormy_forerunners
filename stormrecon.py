@@ -1675,6 +1675,9 @@ class Storm(object):
         S3 = plt.subplot2grid((5,2), (2, 0),rowspan=1,facecolor='w', colspan=1 )
         plt.plot(self.model_init, c='k',alpha=0.4, label='model')
         plt.plot(datasub.reshape(datasub.shape[0]*datasub.shape[1]), c='b',  alpha=0.5, label='data')
+
+        plt.plot(self.weight_sum, alpha=0.8, c='orange', label='weight')
+
         plt.title(fn.next()+' '+'Initial Model and Data in 1D', loc='left', y=1.06)
 
         plt.legend()
@@ -1685,28 +1688,29 @@ class Storm(object):
         plt.plot(self.model_result_corse, c='k', label='model',  alpha=0.4,)
         plt.plot(datasub.reshape(datasub.shape[0]*datasub.shape[1]), c='b', alpha=0.5, label='data')
         #plt.plot(abs(model_result_corse/datasub.reshape(datasub.shape[0]*datasub.shape[1])), c='b', alpha=0.5, label='model/data')
+
         plt.legend()
         #plt.ylim(0, 100)
         plt.title(fn.next()+' '+'Fitted Model and Data in 1D', loc='left', y=1.06)
 
-        # weight
-        S5 = plt.subplot2grid((5,2), (3, 0),rowspan=1,facecolor='w', colspan=1 )
-
-
-        plt.plot(self.weight_sum, alpha=0.8, c='orange', label='weight')
-        plt.plot(datasub.reshape(datasub.shape[0]*datasub.shape[1]), c='b', alpha=0.5, label='data')
-        #plt.plot(self.weight_data1d, c='r', label='data weight')
-        plt.legend()
-        plt.ylim(0, np.max(self.weight_sum)*2)
-        plt.title(fn.next()+' '+'Weight in 1D', loc='left', y=1.02)
-        #plt.grid()
+        # # weight
+        # S5 = plt.subplot2grid((5,2), (3, 0),rowspan=1,facecolor='w', colspan=1 )
+        #
+        #
+        # plt.plot(self.weight_sum, alpha=0.8, c='orange', label='weight')
+        # plt.plot(datasub.reshape(datasub.shape[0]*datasub.shape[1]), c='b', alpha=0.5, label='data')
+        # #plt.plot(self.weight_data1d, c='r', label='data weight')
+        # plt.legend()
+        # plt.ylim(0, np.max(self.weight_sum)*2)
+        # plt.title(fn.next()+' '+'Weight in 1D', loc='left', y=1.02)
+        # #plt.grid()
 
 
         # 2d residual
 
         S7 = plt.subplot2grid((5,2), (3, 1),rowspan=2,facecolor='w', colspan=1 )
-        cmap = brewer2mpl.get_map('RdBu', 'diverging', 10, reverse=True).mpl_colormap
-        cval=np.linspace(-self.clevs[-1], self.clevs[-1], 20)
+        #cmap = brewer2mpl.get_map('RdBu', 'diverging', 10, reverse=True).mpl_colormap
+        #cval=np.linspace(-self.clevs[-1], self.clevs[-1], 20)
         #plt.contourf(time,f,self.residual_2d.T, cval, cmap=cmap)
         plt.contourf(time,f,(datasub-self.model_result_corse.reshape(datasub.shape[0],datasub.shape[1])).T, cval, cmap=cmap)
         cbar=plt.colorbar()
@@ -1723,7 +1727,7 @@ class Storm(object):
 
 
         # time mean residual
-        S6 = plt.subplot2grid((5,2), (4, 0),rowspan=1,facecolor='w', colspan=1 )
+        S6 = plt.subplot2grid((5,2), (3, 0),rowspan=2,facecolor='w', colspan=1 )
 
         model_result_tmean=np.copy(self.model_result_corse)
         model_result_tmean[self.nan_track]=np.nan
@@ -1750,23 +1754,28 @@ class Storm(object):
 
         #plt.plot(f,model_tmean_corse , label='model corse')
         #plt.plot(f,residual_tmean, label='residual func')
-        plt.plot(f,data_tmean, label='data' , c='b', alpha=0.5)
+        plt.plot(f,data_tmean, label='normed data' , c='b', alpha=0.5)
 
 
         _, _, _, masked_data2=self.get_max_data()
-        plt.plot(f,    np.nanmean(  (masked_data2* self.factor).T , 1), label='data under Curve' , c='b')
+        #plt.plot(f,    np.nanmean(  (masked_data2* self.factor).T , 1), label='data under Curve' , c='b')
 
-        plt.plot(f,-(data_tmean-model_result_tmean), label='residual')
+        plt.plot(f,-(data_tmean-model_result_tmean),'g' ,label='total residual', alpha=0.5)
 
-        plt.plot(f,residual_tmean, label='weighted residual' )
-        if hasattr(self, 'plain_fitter'):
-            if hasattr(self.plain_fitter, 'model_timemean'):
-                plt.plot(f,self.plain_fitter.model_timemean, label='subtracted surface' )
+        plt.plot(f,residual_tmean, 'g', label='weighted residual' )
+
+        if hasattr(self, 'noise_model') and (self.noise_model is not False):
+                plt.plot(f,self.noise_model['tmean'],'r' ,label='subtracted surface' )
+                plt.plot(f,data_tmean- self.noise_model['tmean'], label='data normed - noise' , c='b', alpha=1)
+        else:
+                plt.plot(f,data_tmean, label='data normed' , c='b', alpha=1)
         #plt.plot(f,-resid2_tmean, label='residual2' )
-        plt.legend()
+        plt.legend(ncol=2)
         plt.xlim(flim)
         pcut=M.cut_nparray(f, flim[0], flim[1])
-        lylim=np.max([model_result_tmean[pcut].min() ,model_result_tmean[pcut].max()])*1.3
+        #lylim=np.max([model_result_tmean[pcut].min() ,model_result_tmean[pcut].max()])*1.3
+        lylim=np.max([data_tmean[pcut].min() ,data_tmean[pcut].max()])*1.2
+        data_tmean
         plt.ylim(-lylim ,lylim)
 
         plt.title(fn.next()+' '+'Time mean Residual', loc='left', y=1.06)
@@ -3782,7 +3791,7 @@ class Fetch_Propability(object):
                               np.datetime64( table['t0_ns'].astype('datetime64[ns]').quantile(qlim[1]) ).astype('M8[h]'))
         xbins               =np.arange(xlim[0], xlim[1],time_resolution ).astype('M8[m]')
         #print(xbins)
-        r0_range    = np.arange(0, 180*110*1000, radial_resolution)
+        r0_range    = np.arange(0, 2000*110*1000, radial_resolution)
         a   =r0_range-table['r0'].quantile(qlim[0])
         b   =r0_range-table['r0'].quantile(qlim[1])
 
@@ -3859,10 +3868,10 @@ class Fetch_Propability(object):
 
 
         self.clevs=np.arange(0, 1, .05)
-        plt.pcolormesh(self.data['time'], self.data['radius']/1000.0, self.data['fetchPDF'], norm=colors.LogNorm(),cmap = cmap)
+        plt.pcolormesh(self.data['time'], self.data['radius']/(100*1000.0), self.data['fetchPDF'], norm=colors.LogNorm(),cmap = cmap)
 
         plt.xlabel('Time (6 hours)')
-        plt.ylabel('Radial Distance (km)')
+        plt.ylabel('Radial Distance (100 km)')
 
         ax=plt.gca()
         ax.xaxis_date()

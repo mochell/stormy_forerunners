@@ -102,22 +102,35 @@ def storm_fitter_gaussian_gamma(S, params,cont):
         masked_data=S.masked_data
         S.masked_data_less_noise= masked_data
         S.write_log('- no noise model applied ')
+        S.noise_model= {'type':cont['noise_model'], 'tmean': None}
 
+<<<<<<< HEAD
     elif cont['noise_model'] is 'substract_plain_simple':
+=======
+
+    elif cont['noise_model'] == 'substract_plain_simple':
+>>>>>>> 82566e1be82cec9b08453678461aa668de0e5ba7
         masked_data=S.substract_plain(datasub=S.masked_data, verbose=False)
         S.write_log('- substracted efolding plain')
         #S.substract_plain_simple( datasub=S.data*S.factor, verbose=True)
         #S.write_log('  substracted simple plain')
         S.masked_data_less_noise= masked_data
+        S.noise_model= {'type':cont['noise_model'], 'tmean': self.plain_fitter.model_timemean}
 
-    elif cont['noise_model'] is 'lateral_boundary_noise':
+    elif cont['noise_model'] == 'lateral_boundary_noise':
 
-        masked_data = MT.lateral_boundary_noise(S.f, S.masked_data, lanzos_width=0.015,  mean_method=np.min )
-        #masked_data= S.substract_plain(datasub=S.masked_data, verbose=False)
+        noise_model = MT.lateral_boundary_noise(S.f, S.masked_data, n=3, lanzos_width=0.015,  mean_method=np.min ).T
+        temp1 = S.masked_data - noise_model
+
+        noise_model_add_slope = MT.top_bottom_tap(temp1.T,  mean_method=np.nanmin  )
+        masked_data = S.masked_data - (noise_model + noise_model_add_slope.T)
+
+        S.noise_model= {'type':cont['noise_model'], 'tmean': np.nanmean(noise_model, 0) }
         S.write_log('- substracted lateral boundaries model')
         #S.substract_plain_simple( datasub=S.data*S.factor, verbose=True)
         #S.write_log('  substracted simple plain')
-        S.masked_data_less_noise= masked_data
+        masked_data[masked_data < -.2] = 0
+        S.masked_data_less_noise = masked_data
 
 
     else:
@@ -125,10 +138,14 @@ def storm_fitter_gaussian_gamma(S, params,cont):
         #raise Warning('Noise model not defined. No Noise model is applied.')
         masked_data=S.masked_data
         S.masked_data_less_noise= masked_data
+
+        S.noise_model= {'type':cont['noise_model'], 'tmean': None}
         S.write_log('- no noise model defined, no model applied ')
 
 
-    S.clevs=M.clevels(masked_data)
+    #S.clevs=M.clevels(masked_data)
+    S.clevs=np.linspace(-0.2, np.nanmax(S.masked_data),21)
+    #S.clevs=np.arange(-0.2, np.nanmax(masked_data), )
     S.write_log('  redefine self.clevs to normalized scale')
     #S.write_log('added factor '+ str(S.factor) +' to local masked_data, S.clevs and model, called. S.factor')
 
