@@ -2734,7 +2734,7 @@ class station_stats(object):
         import pandas as pd
 
         self.write_log('Create table for maximal datapoint')
-        Ldata_max= pd.DataFrame(index=[ 'datamax',  'fmax' , 'tmax_dt64' ,  'tmax_datetime' , 'tmax_sec' ]) #, columns= ['units']
+        Ldata_max= pd.DataFrame(index=[ 'datamax',  'fmax' , 'tmax_dt64' , 'tmax_sec' ]) #, columns= ['units']
 
         masked_data_dict=dict()
         for s in stormlist:
@@ -2756,7 +2756,7 @@ class station_stats(object):
             Smax, fmax, tmax, masked_data2 =S.get_max_data( data=data )
             if sum(np.isnan([Smax, fmax])) == 2:
                 self.write_log(S.ID +' model above none - nop max data')
-            Ldata_max[s]=[Smax , fmax, tmax['dt64'], tmax['datetime'],  tmax['sec'] ]
+            Ldata_max[s]=[Smax , fmax, tmax['dt64'], tmax['sec'] ]
 
             if return_data:
                 masked_data_dict[s]={'masked_data':masked_data2, 'f':S.f, 'time':S.time_dict}
@@ -2929,7 +2929,7 @@ class station_stats(object):
         plt.title('# of Storms', loc='left')
 
         bins=np.arange(-80, lat_lim[1], 2)
-        H=plt.hist(L1.loc['r0_deg']+sation_lat, bins, orientation="horizontal", color='black')
+        H=plt.hist(L1.loc['r0_deg']+sation_lat, bins, orientation="horizontal")
         plt.grid()
         plt.ylim(lat_lim)
         plt.xlabel('# Storms /L1atitude')
