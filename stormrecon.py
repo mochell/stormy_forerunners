@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/Users/laure/Desktop/stage San Diego/travail/2019_swell_NP/modules/stormy_forerunners/')
+sys.path.append('/Users/laure/Desktop/stage/travail/modules/stormy_forerunners/')
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -688,7 +688,7 @@ class Storm(object):
 
         #return mdata
 
-    def cut_data(self, time_in, f_data, data, dt_unit, clevs):
+    def cut_data(self, time_in, f_data, data, direction, dt_unit, clevs):
         import numpy.ma as ma
         self.dt_unit=dt_unit
         self.clevs=clevs
@@ -702,7 +702,7 @@ class Storm(object):
         self.create_mask(time)
 
         fmask=M.cut_nparray(f_data, self.geo['f_low'], self.geo['f_high'])#np.logical_and(np.zeros(f_data.size)+1, True)
-
+        print("self.geo['f_low']=",self.geo['f_low'])
         #adjsut geometry
         #print(len(fmask))
         self.f=self.f[fmask]
@@ -725,7 +725,6 @@ class Storm(object):
         else:
             self.time=time[timemask]
 
-
         #print(fmask.shape)
         #print(data.shape)
         self.data=np.copy(data[timemask,:][:,fmask])
@@ -742,10 +741,42 @@ class Storm(object):
         self.masked_data[self.mask ==False]=np.nan
 
         self.data_masked_array= ma.array(self.data, mask=self.mask)
-
-
+        print(self.data_masked_array)
+        
+        
+        ## Directional filtering:
+        
+        time_mean=self.time[len(self.time)/2]
+       # print('time_mean=', time_mean)
+        time_mean_index=np.where(time_in['sec']==time_mean)[0][0]
+       # print('time_mean_index=', time_mean_index)
+        #print(time_in['sec'][time_mean_index])
+       
+        freq_mean=(self.geo['f_low']+self.geo['f_high'])/2
+        #print('freq_mean=', freq_mean)
+        freq_mean_index=(np.abs(f_data-freq_mean)).argmin()
+        #print('freq_mean_index=', freq_mean_index)
+        
+        peak_direction=direction[time_mean_index,freq_mean_index]
+       # print('peak_direction=', peak_direction)
+        t_initial=self.time[0]
+        #print('t_initial=', t_initial)
+        t_initial_index=np.where(time_in['sec']==t_initial)[0][0]
+        
+        for i in range(len(self.data_masked_array[:,1])):
+            for j in range(len(self.data_masked_array[1,:])):
+                if peak_direction-20>direction[t_initial_index+i,j] or direction[t_initial_index+i,j]>peak_direction+20:
+                    self.data_masked_array[i,j]=0
+        print(self.data_masked_array)
+        
+  
         self.write_log('cutted & assigned data of oroginal shape' + str(data.shape))
         self.write_log('data cutted')
+                    
+           
+                 
+        
+        
 
     def load(self, path, verbose=False):
         #load data and attibutes
