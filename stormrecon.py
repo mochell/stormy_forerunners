@@ -647,7 +647,7 @@ class Storm(object):
         self.clevs=np.linspace(mmin, mmax, 31)
         #self.clevs=np.arange(0,1+.1,.1)*1e-5
         self.cbarstr=['%.1e' % Decimal(p) for p in self.clevs]
-
+        print(self.masked_data)
         Figure=M.plot_spectrogram(self.time_dict[time_flag],self.f,self.masked_data,
                     #clevs=clevs,
                     sample_unit='1/'+self.dt_unit,
@@ -739,35 +739,48 @@ class Storm(object):
         self.masked_data=np.copy(self.data)
         #print(self.masked_data.shape, self.mask.shape)
         self.masked_data[self.mask ==False]=np.nan
-
+        #print('self.mask=',self.mask)
         self.data_masked_array= ma.array(self.data, mask=self.mask)
-        print(self.data_masked_array)
+        #print('self.masked_data=',self.masked_data)
+        #print('self.data_masked_array=',self.data_masked_array)
         
         
         ## Directional filtering:
         
-        time_mean=self.time[len(self.time)/2]
-       # print('time_mean=', time_mean)
-        time_mean_index=np.where(time_in['sec']==time_mean)[0][0]
-       # print('time_mean_index=', time_mean_index)
-        #print(time_in['sec'][time_mean_index])
-       
-        freq_mean=(self.geo['f_low']+self.geo['f_high'])/2
-        #print('freq_mean=', freq_mean)
-        freq_mean_index=(np.abs(f_data-freq_mean)).argmin()
-        #print('freq_mean_index=', freq_mean_index)
+        #max_index1=np.where(self.data_masked_array == np.nanmax(self.data_masked_array))
+        max_index=np.where(self.masked_data == np.nanmax(self.masked_data))
+        #print('max_index1=', max_index1)
+        print(self.masked_data[max_index])
+        print('max_index=', max_index)
+        time_index_masked=max_index[0][0]
+        freq_index_masked=max_index[1][0]
+        time_index=np.where(time_in['sec']==self.time[time_index_masked])
+        freq_index=np.where(f_data==self.f[freq_index_masked])
+        print('time_index=',time_index, 'freq_index_=',freq_index)
         
-        peak_direction=direction[time_mean_index,freq_mean_index]
-       # print('peak_direction=', peak_direction)
+        peak_direction=direction[time_index,freq_index]
+        print('peak_direction=', peak_direction)
         t_initial=self.time[0]
         #print('t_initial=', t_initial)
         t_initial_index=np.where(time_in['sec']==t_initial)[0][0]
         
-        for i in range(len(self.data_masked_array[:,1])):
-            for j in range(len(self.data_masked_array[1,:])):
-                if peak_direction-20>direction[t_initial_index+i,j] or direction[t_initial_index+i,j]>peak_direction+20:
-                    self.data_masked_array[i,j]=0
-        print(self.data_masked_array)
+        if peak_direction<100:
+            for i in range(len(self.data_masked_array[:,1])):
+                for j in range(len(self.data_masked_array[1,:])):
+                    if peak_direction+160<direction[t_initial_index+i,j]<360+peak_direction-100:
+                        self.masked_data[i,j]=np.nan
+        if peak_direction>260:
+            for i in range(len(self.data_masked_array[:,1])):
+                for j in range(len(self.data_masked_array[1,:])):
+                    if peak_direction-100>direction[t_initial_index+i,j]>(peak_direction+100)-360:
+                        self.masked_data[i,j]=np.nan
+        if 100<peak_direction<260:
+            for i in range(len(self.data_masked_array[:,1])):
+                for j in range(len(self.data_masked_array[1,:])):
+                    if peak_direction+100<direction[t_initial_index+i,j] or peak_direction-100>direction[t_initial_index+i,j]:
+                        self.masked_data[i,j]=np.nan                
+        #print(self.masked_data)          
+        
         
   
         self.write_log('cutted & assigned data of oroginal shape' + str(data.shape))
