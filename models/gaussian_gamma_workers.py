@@ -147,12 +147,14 @@ def storm_fitter_gaussian_gamma(S, params,cont):
 
 
     # 4. fmax
-    f_max0=S.f[M.find_max_ts(np.nanmean(masked_data,0), smooth=True,spreed=round(S.f.size/10.), verbose=False )[0][0]] #0.05
+    #f_max0=S.f[M.find_max_ts(np.nanmean(masked_data,0), smooth=True,spreed=round(S.f.size/10.), verbose=False )[0][0]]  #0.05
+    f_max0=0.01
     if f_max0 < params['f_max'].min:
         f_max0=params['f_max'].min
     elif f_max0 > params['f_max'].max:
         f_max0=params['f_max'].max
     #params['f_max'].set(value= f_max0, min=S.geo['f_low'], max=S.geo['f_high'])
+    print('f_max0=',f_max0)
     params['f_max'].set(value= f_max0)#, min=S.geo['f_low'], max=S.geo['f_high'])
     S.write_log('- adjusted f_max to f_max0:'+ str(f_max0) + ' min:'+ str(S.geo['f_low']) + ' max:' + str(S.geo['f_high']) )
 

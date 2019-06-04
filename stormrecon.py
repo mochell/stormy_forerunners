@@ -731,9 +731,6 @@ class Storm(object):
         #print(self.data.shape)
         self.mask=self.mask_full[timemask,:][:,fmask]
 
-
-
-
         #print('mask full', self.mask_full.shape)
         #print(self.mask.shape)
         self.masked_data=np.copy(self.data)
@@ -745,11 +742,22 @@ class Storm(object):
         #print('self.data_masked_array=',self.data_masked_array)
         
         
-        ## Directional filtering:
+  ## Directional filtering:
+       
+        first_not_nan=np.where(np.isnan(self.masked_data[:,0])==False)[0][0]
+        print(first_not_nan)
+        #print(self.masked_data[:,0])
+        print(time_in['dt64'][np.where(time_in['sec']==self.time[first_not_nan])])
         
-        #max_index1=np.where(self.data_masked_array == np.nanmax(self.data_masked_array))
+        last_not_nan=np.where(np.isnan(self.masked_data[:,-1])==False)[0][-1]
+        print(last_not_nan)
+        #print(self.masked_data[:,-1])
+        print(time_in['dt64'][np.where(time_in['sec']==self.time[last_not_nan])])
+        
+        time_length=last_not_nan-first_not_nan+1
+        print('time_length=',time_length)
+        
         max_index=np.where(self.masked_data == np.nanmax(self.masked_data))
-        #print('max_index1=', max_index1)
         print(self.masked_data[max_index])
         print('max_index=', max_index)
         time_index_masked=max_index[0][0]
@@ -758,26 +766,43 @@ class Storm(object):
         freq_index=np.where(f_data==self.f[freq_index_masked])
         print('time_index=',time_index, 'freq_index_=',freq_index)
         
+        
+        max_index=np.where(self.masked_data == np.nanmax(self.masked_data[first_not_nan+1/5*time_length:last_not_nan-1/5*time_length,len(self.f)/4:3*len(self.f)/4]))
+        #print('max_index1=', max_index1)
+       # print(self.masked_data[max_index])
+        print('max_index=', max_index)
+        time_index_masked=max_index[0][0]
+        freq_index_masked=max_index[1][0]
+        time_index=np.where(time_in['sec']==self.time[time_index_masked])
+        freq_index=np.where(f_data==self.f[freq_index_masked])
+        print('time_index=',time_index, 'freq_index_=',freq_index)
+       
         peak_direction=direction[time_index,freq_index]
         print('peak_direction=', peak_direction)
-        t_initial=self.time[0]
-        #print('t_initial=', t_initial)
-        t_initial_index=np.where(time_in['sec']==t_initial)[0][0]
         
-        if peak_direction<100:
-            for i in range(len(self.data_masked_array[:,1])):
-                for j in range(len(self.data_masked_array[1,:])):
-                    if peak_direction+160<direction[t_initial_index+i,j]<360+peak_direction-100:
+        t_initial=self.time[0]
+        print('t_initial=', t_initial)
+        t_initial_index=np.where(time_in['sec']==t_initial)[0][0]
+        print('t_initial=', time_in['dt64'][t_initial_index])
+        
+        f_initial=self.f[0]
+        print('f_initial=', f_initial)
+        f_initial_index=np.where(f_data==f_initial)[0][0]
+        
+        if peak_direction<80:
+            for i in range(len(self.masked_data[:,1])):
+                for j in range(len(self.masked_data[1,:])):
+                    if peak_direction+80<direction[t_initial_index+i,f_initial_index+j]<360+peak_direction-80:
                         self.masked_data[i,j]=np.nan
-        if peak_direction>260:
-            for i in range(len(self.data_masked_array[:,1])):
-                for j in range(len(self.data_masked_array[1,:])):
-                    if peak_direction-100>direction[t_initial_index+i,j]>(peak_direction+100)-360:
+        if peak_direction>280:
+            for i in range(len(self.masked_data[:,1])):
+                for j in range(len(self.masked_data[1,:])):
+                    if peak_direction-80>direction[t_initial_index+i,f_initial_index+j]>(peak_direction+80)-360:
                         self.masked_data[i,j]=np.nan
-        if 100<peak_direction<260:
-            for i in range(len(self.data_masked_array[:,1])):
-                for j in range(len(self.data_masked_array[1,:])):
-                    if peak_direction+100<direction[t_initial_index+i,j] or peak_direction-100>direction[t_initial_index+i,j]:
+        if 80<peak_direction<280:
+            for i in range(len(self.masked_data[:,1])):
+                for j in range(len(self.masked_data[1,:])):
+                    if peak_direction+80<direction[t_initial_index+i,f_initial_index+j] or peak_direction-80>direction[t_initial_index+i,j]:
                         self.masked_data[i,j]=np.nan                
         #print(self.masked_data)          
         
@@ -785,7 +810,6 @@ class Storm(object):
   
         self.write_log('cutted & assigned data of oroginal shape' + str(data.shape))
         self.write_log('data cutted')
-                    
            
                  
         
