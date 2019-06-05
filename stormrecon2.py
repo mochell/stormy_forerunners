@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/home/lbaratgin/work/modules/stormy_forerunners/')
+sys.path.append('/home/lbaratgin/work/2019_swell_NP/modules/stormy_forerunners/')
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -10,7 +10,7 @@ import numpy as np
 #from matplotlib.dates import DateFormatter, MinuteLocator
 #from matplotlib import dates
 import datetime as DT
-import tools as MT
+import tools2 as MT
 import spherical_geometry as M_geo
 import general as M
 import imp
@@ -688,7 +688,7 @@ class Storm(object):
 
         #return mdata
 
-    def cut_data(self, time_in, f_data, data, direction, dt_unit, clevs, directional_filtering=False):
+    def cut_data(self, time_in, f_data, data, dt_unit, clevs):
         import numpy.ma as ma
         self.dt_unit=dt_unit
         self.clevs=clevs
@@ -742,76 +742,11 @@ class Storm(object):
         self.masked_data[self.mask ==False]=np.nan
 
         self.data_masked_array= ma.array(self.data, mask=self.mask)
- 
 
-        if directional_filtering==True:
-       
-            first_not_nan=np.where(np.isnan(self.masked_data[:,0])==False)[0][0]
-            print(first_not_nan)
-            #print(self.masked_data[:,0])
-            print(time_in['dt64'][np.where(time_in['sec']==self.time[first_not_nan])])
-        
-            last_not_nan=np.where(np.isnan(self.masked_data[:,-1])==False)[0][-1]
-            print(last_not_nan)
-            #print(self.masked_data[:,-1])
-            print(time_in['dt64'][np.where(time_in['sec']==self.time[last_not_nan])])
-        
-            time_length=last_not_nan-first_not_nan+1
-            print('time_length=',time_length)
-        
-            max_index=np.where(self.masked_data == np.nanmax(self.masked_data))
-            print(self.masked_data[max_index])
-            print('max_index=', max_index)
-            time_index_masked=max_index[0][0]
-            freq_index_masked=max_index[1][0]
-            time_index=np.where(time_in['sec']==self.time[time_index_masked])
-            freq_index=np.where(f_data==self.f[freq_index_masked])
-            print('time_index=',time_index, 'freq_index_=',freq_index)
-        
-        
-            max_index=np.where(self.masked_data == np.nanmax(self.masked_data[first_not_nan+1/5*time_length:last_not_nan-1/5*time_length,len(self.f)/4:3*len(self.f)/4]))
-            #print('max_index1=', max_index1)
-           # print(self.masked_data[max_index])
-            print('max_index=', max_index)
-            time_index_masked=max_index[0][0]
-            freq_index_masked=max_index[1][0]
-            time_index=np.where(time_in['sec']==self.time[time_index_masked])
-            freq_index=np.where(f_data==self.f[freq_index_masked])
-            print('time_index=',time_index, 'freq_index_=',freq_index)
-       
-            peak_direction=direction[time_index,freq_index]
-            print('peak_direction=', peak_direction)
-        
-            t_initial=self.time[0]
-            print('t_initial=', t_initial)
-            t_initial_index=np.where(time_in['sec']==t_initial)[0][0]
-            print('t_initial=', time_in['dt64'][t_initial_index])
-        
-            f_initial=self.f[0]
-            print('f_initial=', f_initial)
-            f_initial_index=np.where(f_data==f_initial)[0][0]
-        
-            if peak_direction<80:
-                for i in range(len(self.masked_data[:,1])):
-                    for j in range(len(self.masked_data[1,:])):
-                        if peak_direction+80<direction[t_initial_index+i,f_initial_index+j]<360+peak_direction-80:
-                            self.masked_data[i,j]=np.nan
-            if peak_direction>280:
-                for i in range(len(self.masked_data[:,1])):
-                    for j in range(len(self.masked_data[1,:])):
-                        if peak_direction-80>direction[t_initial_index+i,f_initial_index+j]>(peak_direction+80)-360:
-                            self.masked_data[i,j]=np.nan
-            if 80<peak_direction<280:
-                for i in range(len(self.masked_data[:,1])):
-                    for j in range(len(self.masked_data[1,:])):
-                        if peak_direction+80<direction[t_initial_index+i,f_initial_index+j] or peak_direction-80>direction[t_initial_index+i,j]:
-                            self.masked_data[i,j]=np.nan                
-        #print(self.masked_data)          
-  
-            self.write_log('cutted & assigned data of oroginal shape' + str(data.shape))
-            self.write_log('data cutted')
-        
-        
+
+        self.write_log('cutted & assigned data of oroginal shape' + str(data.shape))
+        self.write_log('data cutted')
+
     def load(self, path, verbose=False):
         #load data and attibutes
         D= MT.pickle_load(self.ID,path, verbose)
@@ -833,7 +768,7 @@ class Storm(object):
         from pandas.io.pytables import PerformanceWarning
         self.write_log('data saved')
 
-        #save as an npy file with pickle flag False
+        #save as an npy file with cPickle flag False
         #+ Jason for meta data and par numbers.
         if not isinstance(self.SM_dict_pandas, type(None)):
             #SM_dic=self.SM_dict_pandas
@@ -1446,6 +1381,7 @@ class Storm(object):
             self.fitter = mini.minimize(method=model,ftol=1e-15)#, reduce_fcn=reduce_fct)#, fcn_args=args, fcn_kws=kws,
                                #iter_cb=iter_cb, scale_covar=scale_covar, **fit_kws)
             #self.fitter = minimize(model_residual_func, params,method=model, args=(time, self.f,),
+            #                    kws={'data':datasub, 'eps':None, 'weight':self.weight_sum}, nan_policy='omit',
             #                    ftol=1e-15)#, reduce_fcn=reduce_fct)#, fcn_args=args, fcn_kws=kws,
             #                   #iter_cb=iter_cb, scale_covar=scale_covar, **fit_kws)
 
@@ -2633,7 +2569,7 @@ class Storm(object):
                         Units: m^2/Hz
 
         """
-        
+
         if hasattr(self, 'fitter_error'):
             fitter=self.fitter_error
         else:
