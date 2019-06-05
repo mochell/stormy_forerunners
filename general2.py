@@ -27,7 +27,8 @@ class plot_spectrogram(object):
                 self.data_unit=data_unit if data_unit is not None else 'X'
                 self.time_unit=time_unit if time_unit is not None else 'dt'
 
-                self.cmap=cmap if cmap is not None else plt.cm.ocean_r
+                #self.cmap=cmap if cmap is not None else plt.cm.ocean_r
+                self.cmap=cmap if cmap is not None else plt.cm.hsv
                 self.ylim=ylim if ylim is not None else [fs[0],fs[-1]]
 
             def loglog(self):
