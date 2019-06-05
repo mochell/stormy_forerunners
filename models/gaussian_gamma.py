@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 if __name__ == '__main__':
     execfile(os.environ['PYTHONSTARTUP'])
     execfile(STARTUP_IG2018)
@@ -7,21 +6,8 @@ import sys, imp
 #import pickle
 from lmfit import minimize, Parameters
 import copy
-        
-=======
-#if __name__ == '__main__':
-#
-#     execfile(os.environ['PYTHONSTARTUP'])
-#     execfile(STARTUP_IG2018)
-#
-#%matplotlib inline
-#
-#
-#     import sys, imp
-#     #import pickle
-#     from lmfit import minimize, Parameters
-#     import copy
->>>>>>> 82566e1be82cec9b08453678461aa668de0e5ba7
+
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -252,8 +238,8 @@ if __name__ == '__main__':
     model_func =gamma_time_PM_IG(time, f2, slope0, intersect0, tgammapar0, tscale0, f_max=0.01, power_slope = 2, power_exp = 2, plot=True)
     #plt.contour(tt, ff, fake_data, colors='k')
 
-    
-# %%    
+
+# %%
 g=9.81
 
 def X_tilde(X, U10):
