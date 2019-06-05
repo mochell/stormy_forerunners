@@ -6,7 +6,7 @@ import sys, imp
 #import pickle
 from lmfit import minimize, Parameters
 import copy
-        
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -395,7 +395,7 @@ if __name__ == '__main__':
     plt.contourf(time, f, resid1d_weight.reshape(time.size, f.size).T)
 
 
-    
+
 # %%
 def Jm_regulizer(value_dict, prior):
     """
