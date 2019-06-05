@@ -1,3 +1,14 @@
+<<<<<<< HEAD
+if __name__ == '__main__':
+    execfile(os.environ['PYTHONSTARTUP'])
+    execfile(STARTUP_IG2018)
+
+import sys, imp
+#import pickle
+from lmfit import minimize, Parameters
+import copy
+        
+=======
 #if __name__ == '__main__':
 #
 #     execfile(os.environ['PYTHONSTARTUP'])
@@ -10,6 +21,7 @@
 #     #import pickle
 #     from lmfit import minimize, Parameters
 #     import copy
+>>>>>>> 82566e1be82cec9b08453678461aa668de0e5ba7
 import matplotlib.pyplot as plt
 import numpy as np
 

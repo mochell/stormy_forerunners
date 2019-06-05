@@ -1,3 +1,17 @@
+import numpy as np
+import sys
+sys.path.append('/home/lbaratgin/work/modules/stormy_forerunners/')
+import tools as MT
+
+import matplotlib.pyplot as plt
+import datetime as DT
+import matplotlib.colors as colors
+from matplotlib import dates
+import time
+import scipy.signal as signal
+import matplotlib.ticker as ticker
+import numpy as np
+                
 class plot_spectrogram(object):
 
             def __init__(self,time,fs, data,clevs=None, sample_unit=None, data_unit=None,
@@ -13,7 +27,8 @@ class plot_spectrogram(object):
                 self.data_unit=data_unit if data_unit is not None else 'X'
                 self.time_unit=time_unit if time_unit is not None else 'dt'
 
-                self.cmap=cmap if cmap is not None else plt.cm.ocean_r
+                #self.cmap=cmap if cmap is not None else plt.cm.ocean_r
+                self.cmap=cmap if cmap is not None else plt.cm.hsv
                 self.ylim=ylim if ylim is not None else [fs[0],fs[-1]]
 
             def loglog(self):
@@ -133,15 +148,7 @@ class plot_spectrogram(object):
             def power_imshow(self, shading=None, downscale_fac=None, anomalie=False,
                             downscale_type=None, fig_size=None , nopower=False, ax=None, cbar=True):
 
-                import matplotlib.pyplot as plt
-                import datetime as DT
-                import matplotlib.colors as colors
-                from matplotlib import dates
-                import time
-                import scipy.signal as signal
-                import matplotlib.ticker as ticker
-                import numpy as np
-                from .tools import stats_format
+                import MT.stats_format
 
                 shading='gouraud' if shading is True else 'flat'
                 fig_size=[10,4] if fig_size is None else fig_size

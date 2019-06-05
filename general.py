@@ -1,4 +1,17 @@
 import numpy as np
+import sys
+sys.path.append('/home/lbaratgin/work/modules/stormy_forerunners/')
+import tools as MT
+
+import matplotlib.pyplot as plt
+import datetime as DT
+import matplotlib.colors as colors
+from matplotlib import dates
+import time
+import scipy.signal as signal
+import matplotlib.ticker as ticker
+import numpy as np
+
 
 class plot_spectrogram(object):
 
@@ -143,7 +156,9 @@ class plot_spectrogram(object):
                 import scipy.signal as signal
                 import matplotlib.ticker as ticker
                 import numpy as np
-                from .tools import stats_format
+                import sys
+                sys.path.append('/home/lbaratgin/work/modules/stormy_forerunners/')
+                import tools as MT
 
                 shading='gouraud' if shading is True else 'flat'
                 fig_size=[10,4] if fig_size is None else fig_size
@@ -223,7 +238,7 @@ class plot_spectrogram(object):
                     print('time axis is not converted')
                     ttt=tt
 
-                stats_format(dd2)
+                MT.stats_format(dd2)
                 self.cs=plt.pcolormesh(ttt,fn ,dd2,cmap=self.cmap , norm=norm,
                 shading=shading)#, origin='lower',aspect='auto',
                     #interpolation='none',
