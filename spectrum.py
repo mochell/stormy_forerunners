@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/Users/laure/Desktop/stage/travail/2019_swell_NP/modules/')
+sys.path.append('/Users/laure/Desktop/stage/travail/modules/')
 
 import numpy as np
 from numpy import pi
@@ -7,8 +7,8 @@ from scipy.special import gammainc
 from scipy import signal
 import sys
 
-from stormy_forerunners.general import echo_dt
-import stormy_forerunners.general as M
+from stormy_forerunners.general2 import echo_dt
+import stormy_forerunners.general2 as M
 import stormy_forerunners.tools as MT
 
 import matplotlib.pyplot as plt
