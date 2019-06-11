@@ -1,12 +1,16 @@
+import os
 if __name__ == '__main__':
+    
     execfile(os.environ['PYTHONSTARTUP'])
     execfile(STARTUP_IG2018)
 
-import sys, imp
-#import pickle
-from lmfit import minimize, Parameters
-import copy
+    #%matplotlib inline
 
+    import sys, imp
+    #import pickle
+    from lmfit import minimize, Parameters
+    import copy
+        
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -116,7 +120,7 @@ def pierson_moskowitz_fetch_limit(f, X,  U):
 
     return alpha * g**2.0 * w**(-5.) * np.exp(-5./4.0 *  (w/wp)**-4)# Hz**-5 m**2 /s**4  = m**2 sec
 
-def JONSWAP_default(f, X=5e5, U=15, gamma=3.3):
+def JONSWAP_default(f, X, U=15, gamma=3.3):
     """
     see Ocean Surface waves - S. R. Massel eq.3.81 - eq.3.84
     inputs:
@@ -225,9 +229,10 @@ def gamma_time_JONSWAP_default(time, f,
     #print(func_t.shape)
 
     """ Define X(f_max and U) here """
+    def X(f_max, U10):
+        return 3.5**3*g**2/U10/f_max**3
 
-
-    func_freq_temp= JONSWAP_default(f, X=6e5,  U=U10, gamma=gamma_peak)
+    func_freq_temp= JONSWAP_default(f, X=X(f_max,U10),  U=U10, gamma=gamma_peak)
 
     #func_freq_temp=   (famp*np.exp(- (f-fcenter)**2 / fsigma ))
     tt, func_freq= np.meshgrid( time, func_freq_temp)
@@ -292,7 +297,7 @@ def residual_JONSWAP_default_gamma(value_dict, time, f, data=None, weight=None, 
     model= vd['amp'] * gamma_time_JONSWAP_default(time, f,
                         vd['slope'], vd['intersect'],
                         vd['tgammapar'], vd['tscale'],
-                        vd['f_max'], vd['power_slope'], vd['power_exp'],
+                        vd['f_max'],
                         plot=False )
 
     #tt, tt= np.meshgrid(time, ff)

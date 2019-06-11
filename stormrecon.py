@@ -1,5 +1,7 @@
 import sys
 
+sys.path.append('/home/lbaratgin/work/modules/stormy_forerunners/')
+
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -737,7 +739,8 @@ class Storm(object):
         self.masked_data[self.mask ==False]=np.nan
         #print('self.mask=',self.mask)
         self.data_masked_array= ma.array(self.data, mask=self.mask)
- 
+
+
         if directional_filtering==True:
        
             first_not_nan=np.where(np.isnan(self.masked_data[:,0])==False)[0][0]
@@ -805,6 +808,7 @@ class Storm(object):
             self.write_log('cutted & assigned data of oroginal shape' + str(data.shape))
             self.write_log('data cutted')
         
+
     def load(self, path, verbose=False):
         #load data and attibutes
         D= MT.pickle_load(self.ID,path, verbose)
