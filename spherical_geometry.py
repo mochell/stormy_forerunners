@@ -1,11 +1,11 @@
 import sys
-sys.path.append('/Users/laure/Desktop/stage/travail/modules/stormy_forerunners')
+#sys.path.append('/Users/laure/Desktop/stage/travail/2019_swell_NP/modules/')
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 import datetime as DT
-import general2 as M
+import general as M
 
 
 # estimating distances from sloped arrivals
