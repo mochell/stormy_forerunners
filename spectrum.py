@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/Users/laure/Desktop/stage/travail/modules/')
+sys.path.append('/home/lbaratgin/work/modules/')
 
 import numpy as np
 from numpy import pi
