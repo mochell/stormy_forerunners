@@ -54,6 +54,7 @@ def gamma_time_normlized_amp(time, gammapar=2, loc=.2, scale=0.1):
     gamma_mod=gamma(gammapar, loc = loc, scale = scale).pdf(time)
     return  gamma_mod/gamma_mod.max()
 
+
 if __name__ == '__main__':
     plt.plot(time, gamma_time_normlized_amp(time))
     plt.plot(time, gamma_time_normlized_amp(time, gammapar=3, loc=.2, scale=0.1) )
@@ -120,7 +121,7 @@ def pierson_moskowitz_fetch_limit(f, X,  U):
 
     return alpha * g**2.0 * w**(-5.) * np.exp(-5./4.0 *  (w/wp)**-4)# Hz**-5 m**2 /s**4  = m**2 sec
 
-def JONSWAP_default(f, X, U=15, gamma=3.3):
+def JONSWAP_default(f, X, U, gamma):
     """
     see Ocean Surface waves - S. R. Massel eq.3.81 - eq.3.84
     inputs:
@@ -141,7 +142,6 @@ def JONSWAP_default(f, X, U=15, gamma=3.3):
     sigma_pp=0.09
     sigma= np.array([[sigma_p if i else sigma_pp][0]  for i in list(w<=wp)  ])
 
-    gamma=3.3
     delta=np.exp(-(w-wp)**2 / ( 2.*sigma**2. *wp**2. ) )
     peak_factor=gamma**delta
 
@@ -180,10 +180,10 @@ if __name__ == '__main__':
 def gamma_time_JONSWAP_default(time, f,
                    slope_t, intersectT,
                    tgammapar, tscale,
-                    f_max=0.04,
-                    U10= 20,
-                    gamma_peak=3.3,
-                    amplitude=1,
+                    f_max,
+                    U10,
+                    gamma_peak,
+                    amplitude,
                     plot=False):
 
     """
@@ -297,7 +297,7 @@ def residual_JONSWAP_default_gamma(value_dict, time, f, data=None, weight=None, 
     model= vd['amp'] * gamma_time_JONSWAP_default(time, f,
                         vd['slope'], vd['intersect'],
                         vd['tgammapar'], vd['tscale'],
-                        vd['f_max'],
+                        vd['f_max'],vd['U10'],vd['gamma_peak'],vd['amp'],
                         plot=False )
 
     #tt, tt= np.meshgrid(time, ff)

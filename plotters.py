@@ -19,9 +19,9 @@ class NorthPacific_map(object):
         gray1='grey'
         gray2='lightgrey'
         gray3='lightgrey'
-        self.figure=M.figure_axis_xy(12,8)
+        self.figure=M.figure_axis_xy(10,6)
         self.subplot=plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0)
-        self.map= Basemap(width=9000000,height=6000000,
+        self.map= Basemap(width=10000000,height=8000000,
         			resolution='c',projection='aea',\
         			lat_1=-10,lat_2=70,lon_0=-180,lat_0=40
         			)
@@ -62,13 +62,26 @@ class NorthPacific_map(object):
         self.map.drawmapscale(-135, 17, -5, 17, 1000, fontsize = 12)
 
     def title(self, title_str):
-		plt.title(title_str, loc='left', y=1.02, fontsize=16)
+		plt.title(title_str, loc='center', y=1.02, fontsize=14)
 		#plt.title('Define the title2', loc='left', y=1, fontsize=12)
 
     def add_contourlines(self, clevs=None, color='white',zorder=12):
     	clevs=clevs if clevs is not None else self.clevs[4:-1:3]
     	self.cont = self.map.contour(self.x,self.y, self.data,clevs, colors=color,linestyles='-')
     	self.cbar.add_lines(self.cont)
+        
+    def save(self,name=None,path=None, verbose=True):
+        import datetime
+        import os
+        savepath=path if path is not None else os.path.join(os.path.dirname(os.path.realpath('__file__')),'plot/')
+        if not os.path.exists(savepath):
+            os.makedirs(savepath)
+        name=name if name is not None else datetime.date.today().strftime("%Y%m%d_%I%M%p")
+        extension='.png'
+        full_name= (os.path.join(savepath,name)) + extension
+        plt.savefig(full_name, bbox_inches='tight', format='png', dpi=180)
+        if verbose:
+            print('save with: ',name)
 
 
 class Pacific_map(object):
