@@ -1,5 +1,7 @@
 import sys
 
+sys.path.append('/home/lbaratgin/work/modules/stormy_forerunners/')
+
 import matplotlib
 import matplotlib.pyplot as plt
 
