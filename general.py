@@ -504,7 +504,6 @@ class figure_axis_xy(object):
                 else:
                     self.fig, self.ax=plt.subplots(num=None, figsize=(xsize*fig_scale, ysize*fig_scale), dpi=dpi*viewscale, facecolor='w', edgecolor='None')
 
-
         def make_clear_weak(self):
                 #turn off axis spine to the right
                 #self.fig.tight_layout()
