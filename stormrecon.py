@@ -740,22 +740,21 @@ class Storm(object):
         #print('self.mask=',self.mask)
         self.data_masked_array= ma.array(self.data, mask=self.mask)
 
-
         if directional_filtering==True:
-       
+
             first_not_nan=np.where(np.isnan(self.masked_data[:,0])==False)[0][0]
             print(first_not_nan)
             #print(self.masked_data[:,0])
             print(time_in['dt64'][np.where(time_in['sec']==self.time[first_not_nan])])
-        
+
             last_not_nan=np.where(np.isnan(self.masked_data[:,-1])==False)[0][-1]
             print(last_not_nan)
             #print(self.masked_data[:,-1])
             print(time_in['dt64'][np.where(time_in['sec']==self.time[last_not_nan])])
-        
+
             time_length=last_not_nan-first_not_nan+1
             print('time_length=',time_length)
-        
+
             max_index=np.where(self.masked_data == np.nanmax(self.masked_data))
             print(self.masked_data[max_index])
             print('max_index=', max_index)
@@ -764,8 +763,8 @@ class Storm(object):
             time_index=np.where(time_in['sec']==self.time[time_index_masked])
             freq_index=np.where(f_data==self.f[freq_index_masked])
             print('time_index=',time_index, 'freq_index_=',freq_index)
-        
-        
+
+
             max_index=np.where(self.masked_data == np.nanmax(self.masked_data[first_not_nan+1/5*time_length:last_not_nan-1/5*time_length,len(self.f)/4:3*len(self.f)/4]))
             #print('max_index1=', max_index1)
            # print(self.masked_data[max_index])
@@ -775,19 +774,19 @@ class Storm(object):
             time_index=np.where(time_in['sec']==self.time[time_index_masked])
             freq_index=np.where(f_data==self.f[freq_index_masked])
             print('time_index=',time_index, 'freq_index_=',freq_index)
-       
+
             peak_direction=direction[time_index,freq_index]
             print('peak_direction=', peak_direction)
-        
+
             t_initial=self.time[0]
             print('t_initial=', t_initial)
             t_initial_index=np.where(time_in['sec']==t_initial)[0][0]
             print('t_initial=', time_in['dt64'][t_initial_index])
-        
+
             f_initial=self.f[0]
             print('f_initial=', f_initial)
             f_initial_index=np.where(f_data==f_initial)[0][0]
-        
+
             if peak_direction<80:
                 for i in range(len(self.masked_data[:,1])):
                     for j in range(len(self.masked_data[1,:])):
@@ -802,12 +801,11 @@ class Storm(object):
                 for i in range(len(self.masked_data[:,1])):
                     for j in range(len(self.masked_data[1,:])):
                         if peak_direction+80<direction[t_initial_index+i,f_initial_index+j] or peak_direction-80>direction[t_initial_index+i,j]:
-                            self.masked_data[i,j]=np.nan                
-        #print(self.masked_data)          
-  
+                            self.masked_data[i,j]=np.nan
+        #print(self.masked_data)
+
             self.write_log('cutted & assigned data of oroginal shape' + str(data.shape))
             self.write_log('data cutted')
-        
 
     def load(self, path, verbose=False):
         #load data and attibutes
@@ -2631,9 +2629,7 @@ class Storm(object):
 
         """
 
-      
 
-        
         if hasattr(self, 'fitter_error'):
             fitter=self.fitter_error
         else:
@@ -2759,7 +2755,7 @@ class station_stats(object):
 
         #self.L=None
 
-    def create_estimates_table(self, stormlist):
+    def create_estimates_table(self, stormlist, r_units='deg'):
         import pandas as pd
         #Create Table
         self.write_log('Create table with Storm Estimames')
@@ -2779,7 +2775,7 @@ class station_stats(object):
 
         # Convert Errors estimates in Boundaries
         stdfac=1 # Thisis a adjustment factor, since the Error is just too large!
-        self.write_log('use adjusting factor for uncertainties, they are off!')
+        #self.write_log('use adjusting factor for uncertainties, they are off!')
 
         L1.loc['timelB']= [-L1.loc['t0_std'][k]*stdfac+L1.loc['t0'][k] for k in range(L1.shape[1])]
         L1.loc['timeuB']= [+L1.loc['t0_std'][k]*stdfac+L1.loc['t0'][k] for k in range(L1.shape[1])]
@@ -2787,8 +2783,14 @@ class station_stats(object):
         #(L1.loc['timeuB']-L1.loc['timelB'])#/(60*60*24)
 
         stdfac=1 # Thisis a adjustment factor, since the Error is just too large!
-        L1.loc['radiallB']= [-L1.loc['r0_deg_std'][k]*stdfac+L1.loc['r0_deg'][k] for k in range(L1.shape[1])]
-        L1.loc['radialuB']= [+L1.loc['r0_deg_std'][k]*stdfac+L1.loc['r0_deg'][k] for k in range(L1.shape[1])]
+        if r_units == 'deg':
+            L1.loc['radiallB']= [-L1.loc['r0_deg_std'][k]*stdfac+L1.loc['r0_deg'][k] for k in range(L1.shape[1])]
+            L1.loc['radialuB']= [+L1.loc['r0_deg_std'][k]*stdfac+L1.loc['r0_deg'][k] for k in range(L1.shape[1])]
+        elif r_units == 'm':
+
+            L1.loc['radiallB']= [-L1.loc['r0_std'][k]*stdfac+L1.loc['r0'][k] for k in range(L1.shape[1])]
+            L1.loc['radialuB']= [+L1.loc['r0_std'][k]*stdfac+L1.loc['r0'][k] for k in range(L1.shape[1])]
+
 
         self.single_storm=MT.h5_load(stormlist[0], self.save_path)
         hist, self.single_storm_meta=MT.json_load(stormlist[0], self.save_path)
@@ -2938,10 +2940,10 @@ class station_stats(object):
 
         return Lparams
 
-    def create_tables(self, stormlist):
+    def create_tables(self, stormlist, r_units='m'):
         from pandas import concat
         self.write_log('create all Tables')
-        L1=self.create_estimates_table(stormlist)
+        L1=self.create_estimates_table(stormlist, r_units=r_units)
         L2=self.create_fitting_stats_table(stormlist)
         Lparams=self.create_params_table(stormlist)
         Ldata_max=self.create_max_data_table(stormlist)
@@ -2951,8 +2953,10 @@ class station_stats(object):
         #L = concat([L1, L2, Lparams], keys=['estimates', 'params', 'storms'])
         self.L=L.transpose()
 
-    def plot_first_overview(self, L1=None, sation_lat=-78.18,lat_lim=(-80,90) ):
+    def plot_first_overview(self, L1=None, sation_lat=-78.18,lat_lim=(-80,90), uunits=('Time', 'm') ):
         from matplotlib import colors
+        from decimal import Decimal
+
         self.write_log('Statio latitude is at '+ str(sation_lat))
 
         if L1 is not None:
@@ -2964,25 +2968,25 @@ class station_stats(object):
         else:
             raise Exception("Please assign a pandas dataframe to L1 or make shure that L is propper build")
 
-        if hasattr(self, 'single_storm'):
-            S=self.single_storm
-        else:
-            raise Exception("Please assign a single pandas dict (Storm.Storm.SM_dict_pandas) to self.single_storm before executing this function")
+        # if hasattr(self, 'single_storm'):
+        #     S=self.single_storm
+        # else:
+        #     raise Exception("Please assign a single pandas dict (Storm.Storm.SM_dict_pandas) to self.single_storm before executing this function")
 
         F=M.figure_axis_xy(12, 4, fig_scale=1, container=True, view_scale=.5)
         plt.suptitle(self.ID+ ' Overview | total='+str(L1.shape[1]) )#, ha='left', x=.05)
-
+        unit_scaler=1e5 # meters to 100km
         # Initalized model and data 2D
         S1 = plt.subplot2grid((1,7), (0, 0),rowspan=1,facecolor='w', colspan=4 )
         S1=M.subplot_routines(S1)
         for k in range(L1.shape[1]):
-            plt.plot([L1.loc['timelB'][k],L1.loc['timeuB'][k] ], [L1.loc['r0_deg'][k]+sation_lat, L1.loc['r0_deg'][k]+sation_lat ], c='k' )
-            plt.plot([ L1.loc['t0'][k], L1.loc['t0'][k] ]  ,  [L1.loc['radiallB'][k]+sation_lat,L1.loc['radialuB'][k]+sation_lat ], c='r' )
+            plt.plot([L1.loc['timelB'][k],L1.loc['timeuB'][k] ], [ (L1.loc['r0'][k] / unit_scaler) + sation_lat, (L1.loc['r0'][k]/unit_scaler) +sation_lat ], c='k' )
+            plt.plot([ L1.loc['t0'][k], L1.loc['t0'][k] ]  ,  [ (L1.loc['radiallB'][k] / unit_scaler) +sation_lat, (L1.loc['radialuB'][k]/unit_scaler) +sation_lat ], c='r' )
 
-        plt.plot( L1.loc['t0'],L1.loc['r0_deg']+sation_lat,'.', c='k', MarkerSize=3 )
+        plt.plot( L1.loc['t0'], sation_lat + L1.loc['r0']/unit_scaler,'.', c='k', MarkerSize=3 )
 
-        plt.xlabel(S['t0']['unit'])
-        plt.ylabel(S['r0_deg']['unit'])
+        plt.xlabel(uunits[0])
+        plt.ylabel('%.1E' % Decimal(1e5) + ' '+ uunits[1])
         plt.title('\nRadial Distance and Time', loc='left')
         plt.grid()
         plt.ylim(lat_lim)
@@ -2992,8 +2996,8 @@ class station_stats(object):
         S2=M.subplot_routines(S2)
         plt.title('# of Storms', loc='left')
 
-        bins=np.arange(-80, lat_lim[1], 2)
-        H=plt.hist(L1.loc['r0_deg']+sation_lat, bins, orientation="horizontal")
+        bins=np.linspace(0, lat_lim[1], 20)
+        H=plt.hist(sation_lat + L1.loc['r0']/unit_scaler, bins, orientation="horizontal")
         plt.grid()
         plt.ylim(lat_lim)
         plt.xlabel('# Storms /L1atitude')
@@ -3004,7 +3008,7 @@ class station_stats(object):
         S3 = plt.subplot2grid((1,7), (0, 5),rowspan=1,facecolor='w', colspan=1 )
         S3=M.subplot_routines(S3)
         plt.title('Radial Distance Error', loc='left')
-        H=plt.hist2d(list(L1.loc['r0_std']/1000.0),list(L1.loc['r0_deg']+sation_lat), bins=(20, bins), norm=colors.LogNorm())
+        H=plt.hist2d(list(L1.loc['r0_std']/unit_scaler),list(sation_lat + L1.loc['r0']/unit_scaler) , bins=(20, bins), norm=colors.LogNorm())
         plt.grid()
         plt.ylim(lat_lim)
         plt.xlabel('Std (km)')
@@ -3014,7 +3018,7 @@ class station_stats(object):
         S4 = plt.subplot2grid((1,7), (0, 6),rowspan=1,facecolor='w', colspan=1 )
         S4=M.subplot_routines(S4)
         plt.title('Inital Time Error ', loc='left')
-        H=plt.hist2d(list(L1.loc['t0_std']/ np.timedelta64(1, 'h')),list(L1.loc['r0_deg']+sation_lat), bins=(20, bins), norm=colors.LogNorm())
+        H=plt.hist2d(list(L1.loc['t0_std']/ np.timedelta64(1, 'h')),list(L1.loc['r0']/unit_scaler+sation_lat), bins=(20, bins), norm=colors.LogNorm())
         plt.grid()
         plt.xlabel('Std (hours)')
 
