@@ -144,7 +144,7 @@ class plot_spectrogram(object):
             def imshow(self, shading=None, downscale_fac=None, anomalie=False, downscale_type=None, fig_size=None, ax=None,cbar=True):
                 nopower=True
                 self.power_imshow(shading, downscale_fac , anomalie, downscale_type, fig_size , nopower, ax=ax, cbar=cbar)
-                self.cbar.set_label('Power (' + self.data_unit + '^2/f )')
+                self.cbar.set_label('Energy Density(m^2/Hz)')
             def power_imshow(self, shading=None, downscale_fac=None, anomalie=False,
                             downscale_type=None, fig_size=None , nopower=False, ax=None, cbar=True):
 

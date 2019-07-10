@@ -21,9 +21,9 @@ class NorthPacific_map(object):
         gray3='lightgrey'
         self.figure=M.figure_axis_xy(10,6)
         self.subplot=plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0)
-        self.map= Basemap(width=10000000,height=8000000,
-        			resolution='c',projection='aea',\
-        			lat_1=-10,lat_2=70,lon_0=-180,lat_0=40
+        self.map= Basemap(width=13000000,height=8000000,
+        			resolution='c',projection='aeqd',\
+        			lat_1=-10,lat_2=70,lon_0=180,lat_0=30
         			)
 
         self.map.fillcontinents(color=gray1,lake_color=gray1)

@@ -2630,6 +2630,9 @@ class Storm(object):
                         Units: m^2/Hz
 
         """
+
+      
+
         
         if hasattr(self, 'fitter_error'):
             fitter=self.fitter_error
