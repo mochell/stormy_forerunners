@@ -10,7 +10,6 @@ import general as M
 
 from mpl_toolkits.basemap import Basemap,cm, shiftgrid
 
-
 class NorthPacific_map(object):
     def __init__(self, data, lat, lon, clevs,view_scale=None, unit=None, cmap=None):
         view_scale=view_scale if view_scale is not None else 0.5
@@ -22,9 +21,9 @@ class NorthPacific_map(object):
         self.figure=M.figure_axis_xy(10,6)
         self.subplot=plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0)
         self.map= Basemap(width=13000000,height=8000000,
-        			resolution='c',projection='aeqd',\
-        			lat_1=-10,lat_2=70,lon_0=180,lat_0=30
-        			)
+                    resolution='c',projection='aeqd',\
+                    lat_1=0,lat_2=60,lon_0=180,lat_0=30
+                    )
 
         self.map.fillcontinents(color=gray1,lake_color=gray1)
         self.map.drawcoastlines(color=gray2)
@@ -62,14 +61,14 @@ class NorthPacific_map(object):
         self.map.drawmapscale(-135, 17, -5, 17, 1000, fontsize = 12)
 
     def title(self, title_str):
-		plt.title(title_str, loc='center', y=1.02, fontsize=14)
-		#plt.title('Define the title2', loc='left', y=1, fontsize=12)
+        plt.title(title_str, loc='center', y=1.02, fontsize=14)
+        #plt.title('Define the title2', loc='left', y=1, fontsize=12)
 
     def add_contourlines(self, clevs=None, color='white',zorder=12):
-    	clevs=clevs if clevs is not None else self.clevs[4:-1:3]
-    	self.cont = self.map.contour(self.x,self.y, self.data,clevs, colors=color,linestyles='-')
-    	self.cbar.add_lines(self.cont)
-        
+        clevs=clevs if clevs is not None else self.clevs[4:-1:3]
+        self.cont = self.map.contour(self.x,self.y, self.data,clevs, colors=color,linestyles='-')
+        self.cbar.add_lines(self.cont)
+
     def save(self,name=None,path=None, verbose=True):
         import datetime
         import os
@@ -133,8 +132,8 @@ class Pacific_map(object):
         #self.map.drawmapscale(-135, 17, -5, 17, 1000, fontsize = 12)
 
     def title(self, title_str):
-		plt.title(title_str, loc='left', y=1.02, fontsize=16)
-		#plt.title('Define the title2', loc='left', y=1, fontsize=12)
+        plt.title(title_str, loc='left', y=1.02, fontsize=16)
+        #plt.title('Define the title2', loc='left', y=1, fontsize=12)
 
     def add_contourlines(self, clevs=None, color='white',zorder=12):
     	clevs=clevs if clevs is not None else self.clevs[4:-1:3]
