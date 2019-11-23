@@ -1,14 +1,12 @@
-# stormy_forerunners
-The tool tracks storms by forerunners of Swell (Munk, 1947)
+# Stormy Forerunners
+The tool tracks storms by forerunners of Swell inspired by Walter Munk's 1947 paper. It estimates the radial distance and initial time of the swell based on spectrograms. The spectrograms can be observed by wave buoys, seismic stations, or any other point observations of swell. 
 
-Any data from point observations of waves tha resolves dipersed swell arrivals can be used for this method. 
-The module unitilized the dispersion slope and parameteric models of wave spectra (JONSWAP or Pierson Moskowitz) to contruct at two dimensional model function that is fitted to swell events in spectrograms. 
+The module combines the dispersion slope and parameteric models of wave spectra (JONSWAP or Pierson Moskowitz) to contruct at two dimensional model function that is fitted to swell events in spectrograms. 
 
 The fitting procedure has 4 stages that are 
-- selecting events.
-- preparation of the data
+- event selection
+- preparation 
 - model fitting
-- collection and filtering of the results
-
+- collection and filtering
 
 requirements:
