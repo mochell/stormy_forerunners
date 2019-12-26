@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import datetime as DT
-import general as M
+from . import general as M
 
 
 # estimating distances from sloped arrivals

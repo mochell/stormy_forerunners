@@ -115,7 +115,7 @@ def pickle_load(name, path, verbose=True):
     full_name= (os.path.join(path,name+ '.npy'))
     print(full_name)
 
-    with open(full_name, 'r') as f:
+    with open(full_name, 'rb') as f:
         data=pickle.load(f)
 
     if verbose:
@@ -416,7 +416,7 @@ def lateral_boundary_noise(xx, data, n=4,  lanzos_width=0.015,  mean_method=np.m
     base=list()
     for i in np.arange(data.shape[1]):
         ll =data[:,i]
-        aa = ll[~np.isnan(ll)][range(n) +  range(-n, 0)]
+        aa = ll[~np.isnan(ll)][np.arange(n) +  np.arange(-n, 0)]
         base.append(mean_method(aa))
 
     a3 =lanczos_filter_1d( xx, np.array(base), lanzos_width, a=2 , mode='same', method='auto')

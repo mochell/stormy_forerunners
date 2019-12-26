@@ -1,5 +1,4 @@
 import sys
-sys.path.append('/home/lbaratgin/work/2019_swell_NP/modules/stormy_forerunners/')
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -10,9 +9,9 @@ import numpy as np
 #from matplotlib.dates import DateFormatter, MinuteLocator
 #from matplotlib import dates
 import datetime as DT
-import tools2 as MT
-import spherical_geometry as M_geo
-import general as M
+from . import tools as MT
+from . import spherical_geometry as M_geo
+from . import general as M
 import imp
 import matplotlib.dates as dates
 import os

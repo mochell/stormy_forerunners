@@ -1,12 +1,11 @@
-import sys
-
-#sys.path.append('/home/lbaratgin/work/modules/stormy_forerunners/')
-
-import matplotlib
 import matplotlib.pyplot as plt
-
+#get_ipython().magic(u'matplotlib osx')
 import numpy as np
+from scipy import signal
 
+
+
+#from mpl_toolkits.basemap import Basemap,cm
 #import os
 #from matplotlib.dates import DateFormatter, MinuteLocator
 #from matplotlib import dates
@@ -14,11 +13,16 @@ import datetime as DT
 from . import tools as MT
 from . import spherical_geometry as M_geo
 from . import general as M
+
 import imp
 import matplotlib.dates as dates
 import os
 import warnings
 import copy
+
+
+
+
 
 
 class ID_tracker(object):
@@ -54,116 +58,6 @@ class ID_tracker(object):
 
     def add(self, s, date=None):
         self.add_front(s,date=date)
-
-
-class plot_time_chunks_python2(object):
-    def __init__(self, time, f, data, pos, ax=None, fig=None, **kwargs):
-        #pos=[ 30, 60, 90]
-
-        self.f=f
-        self.data=data
-
-        self.time=time
-        self.pos=pos
-        #if isinstance(time[0], int):
-        #    self.time_sec=time
-        #elif isinstance(time[0], np.datetime64):
-        #    self.time_sec=MT.datetime64_to_sec(time)
-        #    #start_date=str(np.datetime64(t).astype('M8[s]'))
-        #else:
-        #    raise ValueError("unknown pos type")
-
-        #if isinstance(pos[0], int):
-        #    self.pos=pos
-        #elif isinstance(pos[0], np.datetime64):
-        #    print('print convert timeto sec')
-        #    self.pos=MT.datetime64_to_sec(pos)
-        #    #dates.date2num(time.astype(DT.datetime))
-        #    #start_date=str(np.datetime64(t).astype('M8[s]'))
-        #else:
-        #    raise ValueError("unknown pos type")
-
-        #print(self.time )
-        #print(self.data.shape)
-        #print('pos',self.pos)
-        if type(self.pos[0]) is tuple:
-            self.time_chu=data_chunks(self.time,self.pos, 0 )
-            self.data_chu=data_chunks(self.data,self.pos, 0 )
-
-        else:
-            self.time_chu=data_chunks_split(self.time,self.pos, 0 )
-            self.data_chu=data_chunks_split(self.data,self.pos, 0 )
-
-        #print(len(self.time_chu))
-        #print(len(self.data_chu))
-        #print(len(self.pos), self.pos[0])
-
-        self.Drawer=self.draw_next(**kwargs)
-        #ax=self.Drawer.next()
-        #contourfdata=plt.contourf(time_chu.next(),f,data_chu.next().T )
-        if ax is None:
-            self.ax=plt.gca()
-        else:
-            self.ax=ax
-
-        if fig is None:
-            self.fig=plt.gcf()
-        else:
-            self.fig=fig
-        #plt.show()
-        plt.ion()
-        self.cbarflag=True
-    def draw_next(self, **kwargs):
-        for i in range(len(self.pos)):
-            print(i)
-            #plt.show()
-
-            yield self.draw_fig(self.time_chu.next(), self.f, self.data_chu.next(), **kwargs)
-
-        #plt.close()
-
-    def draw_fig(self, time, f, data,clevs,ylim=None ,cmap=None,  **kwargs):
-        import matplotlib.colors as colors
-        self.ax.clear()
-        time_local=time#time_chu.next()
-        data_local=data#data_chu.next()
-        print('time', time_local.shape)
-        print('data', data_local.shape)
-
-
-        #Figure=M.plot_periodogram(time_local,f[:],data_local[:,:], **kwargs)
-        #fig=plt.gcf()
-        #M.clevels(data_local[:,:], )
-
-        #Figure.imshow(shading=True, downscale_fac=None, anomalie=False,ax=(self.ax,self.fig), cbar=self.cbarflag)
-        #Figure.set_xaxis_to_days(int1=1, int2=2)
-        #Figure.ax.set_yscale("linear", nonposy='clip')
-        self.clevs=clevs
-        cmap=plt.cm.PuBuGn if cmap is None else cmap
-
-        shading='gouraud'
-        norm = colors.BoundaryNorm(boundaries=self.clevs, ncolors=256)
-
-        #self.cs=plt.contourf(time_local,f,data_local.T,self.clevs, **kwargs)
-        self.cs=plt.pcolormesh(time_local,f,data_local.T,cmap=cmap , norm=norm, shading=shading)
-        #self.ax.set_yscale("log", nonposy='clip')
-
-        if self.cbarflag is True:
-            self.cbar= plt.colorbar(self.cs,pad=0.01)#, Location='right')#
-            self.cbar.ax.aspect=100
-            self.cbar.outline.set_linewidth(0)
-            #self.cbar.set_label('Power db(' + self.data_unit + '^2/f ')
-
-        if ylim is not None:
-            self.ax.set_ylim(ylim[0], ylim[1])
-        #self.ax.set_xticklabels(time_local.astype('M8[D]')[trange][::6], minor=False)
-        #drawnow(draw_fig)
-        #draw_fig()#      The drawnow(makeFig) command can be replaced
-        plt.draw()
-        self.cbarflag=False
-        #self.ax=Figure.ax
-        return self.ax
-
 
 class plot_time_chunks(object):
     def __init__(self, time, f, data, pos, ax=None, fig=None, **kwargs):
@@ -227,7 +121,7 @@ class plot_time_chunks(object):
             print(i)
             #plt.show()
 
-            yield self.draw_fig(self.time_chu.__next__(), self.f, self.data_chu.__next__(), **kwargs)
+            yield self.draw_fig(self.time_chu.next(), self.f, self.data_chu.next(), **kwargs)
 
         #plt.close()
 
@@ -474,7 +368,7 @@ class PointCollectorv4:
             self.line.set_data(self.xs, self.ys)
             self.line.figure.canvas.draw()
 
-def create_listofstorms(slopes, hist=None):
+def create_listoostorms(slopes, hist=None):
 
     storm=dict()
     list_of_storms=dict()
@@ -492,11 +386,11 @@ def create_listofstorms(slopes, hist=None):
             warnings.warn("Some Point are Nan or None")
         else:
 
-            if s[0][1] > s[1][1]: #pente descendante
+            if s[0][1] > s[1][1]:
                 P1, P2 = s[1] , s[0]
             else:
-                P2, P1 = s[1] , s[0] #P1:premiere arrivee P2: derniere arrivee
-            D=s[2] #liste des points verts
+                P2, P1 = s[1] , s[0]
+            D=s[2]
 
             list_of_storms['P1'].append(P1)
             list_of_storms['P2'].append(P2)
@@ -505,6 +399,7 @@ def create_listofstorms(slopes, hist=None):
     return list_of_storms
 
 #def ID_builder(Station, Pol, )
+
 
 def convert_slope_intersect_to_MS1957(slope, intersect, realtime, verbose=False, as_Dataframe=True):
     """
@@ -540,10 +435,11 @@ def convert_slope_intersect_to_MS1957(slope, intersect, realtime, verbose=False,
     else:
         return r0, t0
 
+
 def convert_geo_time_to_dt64(geo):
     import copy
     S=copy.deepcopy(geo)
-    for k,I in S.iteritems():
+    for k,I in S.items():
         if type(I) is list:
             S[k][0]=MT.sec_to_dt64(np.array(I[0]))
         elif isinstance(I, np.ndarray):
@@ -552,11 +448,12 @@ def convert_geo_time_to_dt64(geo):
     S['t0R']=MT.sec_to_dt64(np.array(S['t0R']))
     S['t0L']= MT.sec_to_dt64(np.array(S['t0L']))
     return S
+
 def convert_geo_time_to_float_plot(geo):
     import copy
     S=copy.deepcopy(geo)
     converter=MT.sec_to_float_plot_single
-    for k,I in S.iteritems():
+    for k,I in S.items():
         if type(I) is list:
             S[k][0]=converter(I[0])
         elif isinstance(I, np.ndarray):
@@ -564,7 +461,7 @@ def convert_geo_time_to_float_plot(geo):
     S['t0']=converter(np.array(S['t0']))
     S['t0R']=converter(np.array(S['t0R']))
     S['t0L']= converter(np.array(S['t0L']))
-        #elif type(I) is float:
+        #elif type(I) is floatconvert_geo_time_to_dt64
         #    S[k]=MT.sec_to_dt64(np.array(I))
     return S
 
@@ -583,7 +480,12 @@ class Storm(object):
         self.geo=self.geometry(P1, P2, D, **karg)
         self.write_log('created geometry')
 
-    def geometry(self, P1, P2, D, f_margins=0.001):
+    def geometry(self, P1, P2, D, f_margins=0.01, f_range=None):
+
+        """
+        P1, P2, D are tuple with (time_in_sec, frequency). They were determined by
+        the a picking procedure.
+        """
         #print(P1, P2, D)
         f=self.f
         mf=(P2[0]-P1[0])/(P2[1]-P1[1])
@@ -599,9 +501,12 @@ class Storm(object):
         f_low=P1[1]-f_margins
         f_high=P2[1]+f_margins
 
+        if f_range is not None:
+            f_low = min(f_range[0], P1[1])
+            f_high = max(f_range[1] , P2[1])
+
         bound_r=mf*f + t0R
         bound_l=mf*f + t0L
-
 
         cline=mf*f+t0
         t0_75l=t0-delta_t*.5
@@ -623,7 +528,7 @@ class Storm(object):
             S=convert_geo_time_to_float_plot(self.geo)
         else:
             raise ValueError("unknown time_flag")
-        print(S['D'][0],S['D'][1])
+        #return S
         plt.plot(S['D'][0],S['D'][1],'.',color='g', markersize=20)
         plt.plot(S['P1'][0],S['P1'][1],'.', c='r', markersize=20)
         plt.plot(S['P2'][0],S['P2'][1],'.', c='r', markersize=20)
@@ -649,31 +554,110 @@ class Storm(object):
             plt.plot(tx,np.ones(tx.size)*S['f_low'], c='grey')
             plt.plot(tx,np.ones(tx.size)*S['f_high'], c='grey')
 
-    def plot_cutted_data(self, time_flag='float_plot', **karg ):
+    def plot_cutted_data(self, time_flag='float_plot',ylim=None,  **karg ):
         self.write_log('plotted cutted data')
         from decimal import Decimal
-        mmin=np.nanmin(self.masked_data)
-        mmax=np.nanmax(self.masked_data)
-        self.clevs=np.linspace(mmin, mmax, 31)
+
+        data=np.log(self.masked_data)
+        mmax=np.nanmax(data)
+        mmin=np.nanmin(data)
+        #self.clevs=np.linspace(mmin, mmax, 21)
         #self.clevs=np.arange(0,1+.1,.1)*1e-5
-        self.cbarstr=['%.1e' % Decimal(p) for p in self.clevs]
-        #print(self.masked_data)
-        Figure=M.plot_spectrogram(self.time_dict[time_flag],self.f,self.masked_data,
+        #self.cbarstr=['%.1e' % Decimal(p) for p in self.clevs]
+
+        F=M.figure_axis_xy(4, 6)
+        #Figure=M.plot_periodogram(self.time_dict[time_flag],self.f,self.masked_data,
                     #clevs=clevs,
-                    sample_unit='1/'+self.dt_unit,
-                    ylim=[self.geo['f_low'], self.geo['f_high']], cmap=plt.cm.PuBuGn, clevs=self.clevs, **karg)#(0, .1))
+                    #sample_unit='1/'+self.dt_unit,
+                    #ylim=[self.geo['f_low'], self.geo['f_high']], cmap=plt.cm.PuBuGn, clevs=self.clevs, **karg)#(0, .1))
 
-        Figure.imshow(shading=True, downscale_fac=None,anomalie=False, fig_size=[5, 2])
+        #Figure.imshow(shading=True, downscale_fac=None,anomalie=False, fig_size=[3, 5])
+        plt.pcolormesh(self.time_dict['dt64'], self.f, data.T, cmap=plt.cm.RdBu_r)
+        #F.set_xaxis_to_days()
+        #Figure.ax.set_yscale("linear", nonposy='clip')
+        F.ax.set_title(self.ID +' | '+ str(MT.sec_to_dt64(self.geo['P1'][0]).astype('M8[m]')) , loc='left')
+        #F.ax.set_ylim(0,max([.1, self.f.max()]))
+        if ylim is not None:
+            F.ax.set_ylim(ylim[0], ylim[1])
+        else:
+            F.ax.set_ylim(0.01, 0.2)
+
+        plt.ylabel('Freq')
+        cbar= plt.colorbar(orientation='horizontal', pad=0.06)
+        cbar.outline.set_linewidth(0)
+        if hasattr(self, 'data_unit'):
+            cbar.set_label('Power ('+self.data_unit+')')
+        else:
+            cbar.set_label('(m^2/Hz)')
+
+        M.set_timeaxis_days(F.ax)
+
+        F.make_clear_weak()
+        return F
+
+    def plot_data(self, shading=True, anomalie=False, **karg ):
+
+        import matplotlib.colors as colors
+        import matplotlib.ticker as ticker
+
+        self.write_log('plotted data')
+        shading='gouraud' if shading is True else 'flat'
+
+        F= M.figure_axis_xy(3.15, 6)
+        ax=F.ax
+
+        t1 =self.time_dict['dt64'][0]
+        t2= self.time_dict['dt64'][-1]
+        t_est= t1 + (t2 -t1)/2.0
+
+        ax.set_title(self.ID + '\n'+ str(t_est.astype('M8[m]')) )
+
+        dd=np.copy(10*np.log10(self.data[:-1,:]))
+
+        if anomalie is True:
+            dd_tmp=dd.mean(axis=0).repeat(self.time.size-1)
+            dd=dd- dd_tmp.reshape(self.fs.size,self.time.size-1).T
+
+        self.clevs=M.clevels(dd, 21)
+        norm = colors.BoundaryNorm(boundaries=self.clevs, ncolors=256)
+
+        #ax_local.set_yscale("log", nonposy='clip')
+
+        #time=dates.date2num(self.time.astype(DT.datetime))[:-1]
+        time=self.time_dict['dt64'].astype(DT.datetime)[:-1]
+        fn=self.f
+        #,cmap=self.cmap
+        self.cs=plt.pcolormesh(time,fn ,dd.T , norm=norm,shading=shading)
+
+        plt.ylabel('Hz')
+
+        ax.set_ylim(fn[0], fn[-1])
+        ax.set_xlim(time[0], time[-1])
+
+        Month = dates.DayLocator(bymonthday=range(1,32, 3))
+        Day = dates.DayLocator(interval=1)#bymonthday=range(1,32)
+        dfmt = dates.DateFormatter(' \n%m/%Y')
+
+        dfmt2 = dates.DateFormatter('%d')
 
 
-        Figure.set_xaxis_to_days()
-        Figure.ax.set_yscale("linear", nonposy='clip')
-        Figure.ax.set_title(self.ID)
-        Figure.ax.set_ylim(-.001,max([.1, self.f.max()]))
-        Figure.cbar.set_ticks(self.clevs)
-        Figure.cbar.set_ticklabels(self.cbarstr)
-        Figure.F.make_clear_weak()
-        return Figure
+        ax.xaxis.set_major_locator(Month)
+        ax.xaxis.set_major_formatter(dfmt)
+        ax.xaxis.set_minor_locator(Day)
+        ax.xaxis.set_minor_formatter(dfmt2)
+
+        # ax.xaxis.set_major_locator(ticker.MultipleLocator(5))
+        # ax.xaxis.set_minor_locator(ticker.MultipleLocator(1))
+
+
+
+        cb =plt.colorbar(orientation='horizontal', pad=0.08)
+        cb.set_label('Power db (m/s/s)^2/Hz')
+        cb.set_ticks(self.clevs[::4])
+        cb.set_ticklabels(np.round(self.clevs[::4]))
+        F.make_clear_weak()
+
+        return F
 
     def create_mask(self, time):
         self.write_log('masked created')
@@ -698,7 +682,7 @@ class Storm(object):
 
         #return mdata
 
-    def cut_data(self, time_in, f_data, data, direction, dt_unit, clevs, directional_filtering=False):
+    def cut_data(self, time_in, f_data, data, dt_unit, clevs, f_lim_alt=None):
         import numpy.ma as ma
         self.dt_unit=dt_unit
         self.clevs=clevs
@@ -711,10 +695,13 @@ class Storm(object):
 
         self.create_mask(time)
 
-        fmask=M.cut_nparray(f_data, self.geo['f_low'], self.geo['f_high'])#np.logical_and(np.zeros(f_data.size)+1, True)
-        print("self.geo['f_low']=",self.geo['f_low'])
+        if f_lim_alt is None:
+            fmask=M.cut_nparray(f_data, self.geo['f_low'], self.geo['f_high'])#np.logical_and(np.zeros(f_data.size)+1, True)
+        else:
+            fmask=M.cut_nparray(f_data, f_lim_alt[0], f_lim_alt[1])#np.logical_and(np.zeros(f_data.size)+1, True)
+
         #adjsut geometry
-        #print(len(fmask))
+        #print(fmask)
         self.f=self.f[fmask]
         self.geo['cline']=self.geo['cline'][fmask]
         self.geo['bound_r']=self.geo['bound_r'][fmask]
@@ -730,10 +717,11 @@ class Storm(object):
         if type(time_in) is dict:
             self.time=time[timemask]
             self.time_dict=dict()
-            for k,I in time_in.iteritems():
+            for k,I in time_in.items():
                 self.time_dict[k]=I[timemask]
         else:
             self.time=time[timemask]
+
 
         #print(fmask.shape)
         #print(data.shape)
@@ -741,80 +729,20 @@ class Storm(object):
         #print(self.data.shape)
         self.mask=self.mask_full[timemask,:][:,fmask]
 
+
+
+
         #print('mask full', self.mask_full.shape)
         #print(self.mask.shape)
         self.masked_data=np.copy(self.data)
         #print(self.masked_data.shape, self.mask.shape)
         self.masked_data[self.mask ==False]=np.nan
-        #print('self.mask=',self.mask)
+
         self.data_masked_array= ma.array(self.data, mask=self.mask)
 
-        if directional_filtering==True:
 
-            first_not_nan=np.where(np.isnan(self.masked_data[:,0])==False)[0][0]
-            print(first_not_nan)
-            #print(self.masked_data[:,0])
-            print(time_in['dt64'][np.where(time_in['sec']==self.time[first_not_nan])])
-
-            last_not_nan=np.where(np.isnan(self.masked_data[:,-1])==False)[0][-1]
-            print(last_not_nan)
-            #print(self.masked_data[:,-1])
-            print(time_in['dt64'][np.where(time_in['sec']==self.time[last_not_nan])])
-
-            time_length=last_not_nan-first_not_nan+1
-            print('time_length=',time_length)
-
-            max_index=np.where(self.masked_data == np.nanmax(self.masked_data))
-            print(self.masked_data[max_index])
-            print('max_index=', max_index)
-            time_index_masked=max_index[0][0]
-            freq_index_masked=max_index[1][0]
-            time_index=np.where(time_in['sec']==self.time[time_index_masked])
-            freq_index=np.where(f_data==self.f[freq_index_masked])
-            print('time_index=',time_index, 'freq_index_=',freq_index)
-
-
-            max_index=np.where(self.masked_data == np.nanmax(self.masked_data[first_not_nan+1/5*time_length:last_not_nan-1/5*time_length,len(self.f)/4:3*len(self.f)/4]))
-            #print('max_index1=', max_index1)
-           # print(self.masked_data[max_index])
-            print('max_index=', max_index)
-            time_index_masked=max_index[0][0]
-            freq_index_masked=max_index[1][0]
-            time_index=np.where(time_in['sec']==self.time[time_index_masked])
-            freq_index=np.where(f_data==self.f[freq_index_masked])
-            print('time_index=',time_index, 'freq_index_=',freq_index)
-
-            peak_direction=direction[time_index,freq_index]
-            print('peak_direction=', peak_direction)
-
-            t_initial=self.time[0]
-            print('t_initial=', t_initial)
-            t_initial_index=np.where(time_in['sec']==t_initial)[0][0]
-            print('t_initial=', time_in['dt64'][t_initial_index])
-
-            f_initial=self.f[0]
-            print('f_initial=', f_initial)
-            f_initial_index=np.where(f_data==f_initial)[0][0]
-
-            if peak_direction<80:
-                for i in range(len(self.masked_data[:,1])):
-                    for j in range(len(self.masked_data[1,:])):
-                        if peak_direction+80<direction[t_initial_index+i,f_initial_index+j]<360+peak_direction-80:
-                            self.masked_data[i,j]=np.nan
-            if peak_direction>280:
-                for i in range(len(self.masked_data[:,1])):
-                    for j in range(len(self.masked_data[1,:])):
-                        if peak_direction-80>direction[t_initial_index+i,f_initial_index+j]>(peak_direction+80)-360:
-                            self.masked_data[i,j]=np.nan
-            if 80<peak_direction<280:
-                for i in range(len(self.masked_data[:,1])):
-                    for j in range(len(self.masked_data[1,:])):
-                        if peak_direction+80<direction[t_initial_index+i,f_initial_index+j] or peak_direction-80>direction[t_initial_index+i,j]:
-                            self.masked_data[i,j]=np.nan
-        #print(self.masked_data)
-
-            self.write_log('cutted & assigned data of oroginal shape' + str(data.shape))
-            self.write_log('data cutted')
+        self.write_log('cutted & assigned data of oroginal shape' + str(data.shape))
+        self.write_log('data cutted')
 
     def load(self, path, verbose=False):
         #load data and attibutes
@@ -826,7 +754,7 @@ class Storm(object):
         #if os.path.isfile(path+self.ID+'.h5'):
         #    with pd.HDFStore(path+self.ID+'.h5') as store2:
         #        #store2 = pd.HDFStore(path+self.ID+'x.h5')
-        #        for k,I in store2.iteritems():
+        #        for k,I in store2.items():
         #            setattr(self, k, I)
             #store2.close()
         #return A, B
@@ -850,18 +778,11 @@ class Storm(object):
             #store['time_dict']=self.S.time_dict
             #del self.SM_dict_pandas
 
-        #savedict=self.__dict__
-        #print(savedict)
-        savekeys=self.__dict__.keys()
-        savekyes_less= list(set(savekeys) - set(['weight_data1d', 'weight','weight1d', 'data1d', 'mask_full', 'minmodel']))
-        savedict=dict()
-        for k in savekyes_less:
-            savedict[k]=self.__dict__[k]
-
-        #deletelist=['weight_data1d', 'weight','weight1d', 'data1d', 'mask_full', 'minmodel']
-        #for key in deletelist:
-        #    if key in savedict:
-        #        del savedict[key]
+        savedict=self.__dict__
+        deletelist=['weight_data2d', 'weight_data1d', 'weight','weight1d', 'model_init', 'data1d', 'mask_full', 'minmodel']
+        for key in deletelist:
+            if key in savedict:
+                del savedict[key]
 
         MT.pickle_save(self.ID,save_path, savedict, verbose=verbose)
         save_list=[self.hist]
@@ -869,14 +790,17 @@ class Storm(object):
             from lmfit import Parameters
             params=Parameters()
             #print('fit dict!!')
-            for k,I in self.fit_dict.iteritems():
-                if type(I) is bool:
-                    I=str(I)
 
-            save_list.append(self.fit_dict)
+            sdict=self.fit_dict
+            for k,I in sdict.items():
+                if (type(I) is np.bool_) | (type(I) is bool):
+                    sdict[k] = str(I)
+            save_list.append(sdict)
             #MT.json_save(self.ID,save_path, [self.hist, self.fit_dict], verbose=verbose)
-            self.fitter.params.dump(open(save_path+self.ID+'.fittedparrms.json', 'w'))
-
+            if self.fitter_error:
+                self.fitter_error.params.dump(open(save_path+self.ID+'.fittedparrms.json', 'w'))
+            else:
+                self.fitter.params.dump(open(save_path+self.ID+'.fittedparrms.json', 'w'))
 
         MT.json_save(self.ID,save_path,save_list, verbose=verbose)
         MT.save_log_txt(self.ID,save_path, self.hist,  verbose=verbose)
@@ -887,6 +811,13 @@ class Storm(object):
         time=(time-time[0])/dt#np.arange(0,time.size, 1)
         self.time_dict['normalized']=(time)/(time[-1])
         self.dt_sec=dt
+
+    def normalize_time_weird(self, tend):
+        time=np.copy(self.time_dict['sec'])
+        dt=np.diff(self.time_dict['sec']).mean()#G.dt_periodogram
+        time=(time-time[0])/dt#np.arange(0,time.size, 1)
+        return (time)/(time[-1])
+        #self.dt_sec=dt
 
     def normalize_time_unit(self, t):
         tp=np.copy(t)
@@ -920,7 +851,36 @@ class Storm(object):
     #    local_slope=self.slope_to_dfdt_normalized()
     #    return t0_in_norm* local_slope/(local_slope-1)
 
+    def bell_curve_2d(self,verbose=False, freq_decay=.4 ):
+        from scipy.signal import tukey
+        time=self.time_dict['normalized']
 
+
+        ff, _ =np.meshgrid(tukey(self.f.size,freq_decay), time)
+        ll=np.vstack((self.geo['bound_l'], self.geo['bound_r']))
+        tt_move=np.logical_and(np.zeros(time.size), True)
+        tt_base=np.zeros(time.size)
+        dt=int(np.diff(time).mean())
+
+        for fi in range(self.f.size):
+
+            ll_norm=self.normalize_time_unit([ll[:,fi][0]-dt, ll[:,fi][1]+dt])
+            tpos=M.cut_nparray(time,ll_norm[0], ll_norm[1])
+            hann=np.hanning(tpos.sum())**(1/2)#**2
+            tt_local=np.zeros(time.size)
+            tt_local[tpos]=hann
+
+            tt_move=np.vstack((tt_move, tt_local))
+        tt_move=np.delete(tt_move, 0,0)
+
+        if verbose:
+            plt.subplot(131)
+            plt.contour(time, self.f, tt_move)
+            plt.subplot(132)
+            plt.contour(time, self.f, ff.T)
+            plt.subplot(133)
+            plt.contour(time, self.f, tt_move*ff.T, colors='green')
+        return tt_move*ff.T
 
     def substract_plain_simple(self, datasub=None, verbose=False):
         import brewer2mpl
@@ -1068,19 +1028,31 @@ class Storm(object):
         nan_track=np.isnan(data1d)
 
         if wflag == 'data':
+
             weight=M.runningmean(data1d, 10)
             weight[np.isnan(weight)]=0
             weight[weight <0]=0
             weight1d=weight/weight.std()
             weight=weight1d.reshape(datasub.shape[0],datasub.shape[1])
 
+            self.write_log('used weight:' +wflag)
+
         elif wflag == 'ellipse':
+
             weight=self.bell_curve_2d()
             if weight.shape != datasub.shape:
                 weight=weight.T
             weight1d=weight.reshape(datasub.shape[0]*datasub.shape[1])
             weight1d=weight1d/weight1d.std()
-        self.write_log('used weight:' +wflag)
+
+            self.write_log('used weight:' +wflag)
+
+        elif type(wflag) is np.ndarray:
+
+            weight1d=wflag.reshape(datasub.shape[0]*datasub.shape[1])
+            #weight1d=weight1d/weight1d.std()
+
+            self.write_log('used weight: prescribed')
 
         lower_bound_error=1e-12#error_low.reshape(datasub.shape[0]*datasub.shape[1])
         weight_sum=((weight1d.max()-weight1d)+lower_bound_error)#*self.weight_data1d+lower_bound_error*1)
@@ -1122,9 +1094,9 @@ class Storm(object):
         self.write_log(self.plain_fitter.params.pretty_repr())
 
         if verbose:
-                #from seaborn import diverging_palette as colorplate
+            #from seaborn import diverging_palette as colorplate
             self.write_log('plotted fitted plain')
-            F=M.figure_axis_xy(5,12, view_scale=0.4)
+            F=M.figure_axis_xy(5,12, view_scale=0.6)
             plt.subplot(5,1 ,1)
             plt.plot(weight_sum, c='g', label='weight')
             plt.title('weight')
@@ -1138,9 +1110,12 @@ class Storm(object):
             plt.legend()
 
             plt.subplot(5,1, 3)
+
+            plt.title('Model (cont), data (shading)')
+
             mmax=max(-data1d.min(),data1d.max())
             cval=np.linspace(-mmax, mmax, 21)
-            cmap = colorplate(220, 20, n=41, as_cmap=True)
+            cmap = plt.cm.Blues#colorplate(220, 20, n=41, as_cmap=True)
 
             plt.contour(time,f,model_result_corse.reshape(time.size, f.size).T, colors='black', alpha=0.5)
             plt.contourf(time, f, datasub.T ,cmap=cmap)
@@ -1151,48 +1126,21 @@ class Storm(object):
             plt.grid()
 
             plt.subplot(5,1, 4)
+            plt.title('Data - Model')
             plt.colorbar()
             plt.contourf(time,f, datasub.T - model_result_corse.reshape(time.size, f.size).T, cmap=cmap)
+
             xlabelstr=('(Time)')
             plt.xlabel(xlabelstr)
             #plt.ylim(0.04,0.08)
             plt.grid()
 
             plt.subplot(5,1,5)
-            plt.plot(f,self.plain_fitter.model_timemean )
-            plt.plot(f,np.nanmean(datasub,0 ) )
+            plt.plot(f,self.plain_fitter.model_timemean, label='model time mean' )
+            plt.plot(f,np.nanmean(datasub,0 ) , label='data' )
+            plt.legend()
+
         return masked_data
-
-
-    def bell_curve_2d(self,verbose=False, freq_decay=.4):
-        from scipy.signal import tukey
-        time=self.time_dict['normalized']
-
-
-        ff, _ =np.meshgrid(tukey(self.f.size,freq_decay), time)
-        ll=np.vstack((self.geo['bound_l'], self.geo['bound_r']))
-        tt_move=np.logical_and(np.zeros(time.size), True)
-        tt_base=np.zeros(time.size)
-        dt=int(np.diff(time).mean())
-        for fi in range(self.f.size):
-            ll_norm=self.normalize_time_unit([ll[:,fi][0]-dt, ll[:,fi][1]+dt])
-            tpos=M.cut_nparray(time,ll_norm[0], ll_norm[1])
-            hann=np.hanning(tpos.sum())**(1/2.0)#**2
-            tt_local=np.zeros(time.size)
-            tt_local[tpos]=hann
-
-            tt_move=np.vstack((tt_move, tt_local))
-        tt_move=np.delete(tt_move, 0,0)
-
-        if verbose:
-            plt.subplot(131)
-            plt.contour(time, self.f, tt_move)
-            plt.subplot(132)
-            plt.contour(time, self.f, ff.T)
-            plt.subplot(133)
-            plt.contour(time, self.f, tt_move*ff.T, colors='green')
-            plt.show()
-        return tt_move*ff.T
 
     def create_weight(self, data, wflag='ellipse',freq_decay=0.2 , verbose= False):
         """
@@ -1262,8 +1210,8 @@ class Storm(object):
 
 
     def fit_model(self,params,ttype='JONSWAP_gamma', datasub=None , weight_opt=None, model='least_squares',
-                  error_estimate=None, error_N=None,error_workers=None, error_nwalkers=None,  prior=None, set_initial=True,
-                  error_opt=None):
+                  error_estimate=None, error_N=None, error_workers=None, error_nwalkers=None,  prior=False, set_initial=True,
+                  error_opt=None, basinhopping_opt=None ):
 
         """
         This fits a model to the given data and returns residual, model and several measures of fit
@@ -1321,22 +1269,22 @@ class Storm(object):
 
         self.write_log('used residual model: '+ttype)
         if ttype == 'JONSWAP_gamma':
-            import models.JONSWAP_gamma as minmodel
+            from .models import JONSWAP_gamma as minmodel
 
             time=self.time_dict['normalized']
-            if prior is not None:
+            if prior is not False:
                 self.prior = prior
             else:
-                self.prior = None
+                self.prior = False
             minimizer_fcn_kws = {'data':datasub, 'eps':None, 'prior':self.prior}
             model_residual_func=minmodel.cost
             self.model_residual_func= model_residual_func
             self.minmodel           = minmodel
 
         elif ttype == 'JONSWAP_gamma_regularization':
-            import model_gamma_JONSWAP as minmodel
+            from .models import JONSWAP_gamma as minmodel
             time=self.time_dict['normalized']
-            if prior is not None:
+            if prior is not False:
                 self.prior=prior
                 minimizer_fcn_kws={'data':datasub, 'eps':None, 'prior':self.prior}
                 model_residual_func=minmodel.residual_JANSWAP_gamma_regularization
@@ -1346,9 +1294,9 @@ class Storm(object):
             self.minmodel           = minmodel
 
         elif ttype == 'JONSWAP_gamma_regularization_acc':
-            import model_gamma_JONSWAP as minmodel
+            from .models import JONSWAP_gamma as minmodel
             time=self.time_dict['normalized']
-            if prior is not None:
+            if prior is not False:
                 self.prior=prior
                 minimizer_fcn_kws={'data':datasub, 'eps':None, 'prior':self.prior}
                 model_residual_func=minmodel.residual_JANSWAP_gamma_regularization_acc
@@ -1358,12 +1306,12 @@ class Storm(object):
             self.minmodel           = minmodel
 
         elif ttype == 'gaussian_gamma':
-            import models.gaussian_gamma as minmodel
+            from .models import JONSWAP_gamma as minmodel
             time=self.time_dict['normalized']
-            if prior is not None:
+            if prior is not False:
                 self.prior = prior
             else:
-                self.prior = None
+                self.prior = False
             minimizer_fcn_kws = {'data':datasub, 'eps':None, 'prior':self.prior}
             model_residual_func=minmodel.cost
             self.model_residual_func= model_residual_func
@@ -1425,7 +1373,7 @@ class Storm(object):
         # params.pretty_print()
         # print(time.shape, self.f.shape)
         # minimizer_fcn_kws['weight']=None
-        # for k,I in minimizer_fcn_kws.iteritems():
+        # for k,I in minimizer_fcn_kws.items():
         #     if I is np.array:
         #         print(k,I.shape)
         #     else:
@@ -1446,7 +1394,79 @@ class Storm(object):
             #                    kws={'data':datasub, 'eps':None, 'weight':self.weight_sum}, nan_policy='omit',
             #                    jac='3-point', verbose=1, ftol=1e-15, xtol=1e-12, diff_step=10)#, reduce_fcn=reduce_fct)#, fcn_args=args, fcn_kws=kws,
             #                   #iter_cb=iter_cb, scale_covar=scale_covar, **fit_kws)
-        if model == 'leastsq':
+
+
+        elif model == 'basinhopping':
+
+            class MyTakeStep(object):
+                def __init__(self, y0=None, t0=None, t_lims=None, noise_amp=0.1, stepsize=0.5):
+                    self.stepsize = stepsize
+                    self.y0, self.t0, self.t_lims = y0, t0, t_lims
+                    self.noise_amp =noise_amp
+
+                def __call__(self, x):
+                    #print(x)
+                    s = self.stepsize
+                    #x[0] += np.random.uniform(self.t_lims[0], self.t_lims[1])
+                    x[0] += np.random.uniform(-s, s)#self.t_lims[0], self.t_lims[1])
+                    if (x[0] >=self.t_lims[1]) | (x[0] <=self.t_lims[0]):
+                        x[0]= x[0]/2.0
+
+                    x[1] = - self.s_invert(x[0]) + np.random.uniform(-self.noise_amp, self.noise_amp)
+                    #x[0] += np.random.uniform(-2.*s, 2.*s)
+                    # x[1:] += np.random.uniform(-s, s, x[1:].shape)
+                    #print(x)
+                    return x
+
+                def s_invert(self, tt):
+                    return self.y0 / (tt - self.t0)
+
+            vary_dict=dict()
+            for k,I in params.items():
+                vary_dict[k] = True if I.vary else False
+                I.vary= False
+
+            params['slope'].vary, params['intersect'].vary,params['amp_nondim'].vary  = True, True, True
+            self.write_log('--- Basinhopping:')
+            self.write_log('- only vary')
+
+            for k,I in params.items():
+                if I.vary:
+                    self.write_log(k)
+
+            # initialize step taker for basin jumping
+            intersect_max= params['f_max']/ params['slope'] + params['intersect']
+            stepfunc= MyTakeStep(y0= params['f_max'], t0= intersect_max,
+                        t_lims=(params['intersect'].min, params['intersect'].max), noise_amp=0.01)
+
+
+            #execute basin jumping
+            bopt= basinhopping_opt
+            print(basinhopping_opt)
+            self.fitter = mini.minimize(method=model,params=params,
+                                niter=bopt['niter'], T=bopt['T'], stepsize=bopt['stepsize'], disp=bopt['disp'], take_step=stepfunc)# , diff_step=1)#, reduce_fcn=reduce_fct)#, fcn_args=args, fcn_kws=kws,
+
+            #self.fitter.params.pretty_print()
+            self.write_log('- reset vary to')
+            #self.write_log(str(vary_dict))
+
+            vlist = list()
+            for k,I in self.fitter.params.items():
+                I.vary = vary_dict[k]
+                vlist.append(k +' '+ str(I.vary))
+            self.write_log( str(vlist))
+
+            self.fitter = mini.minimize(method='least_squares', params=self.fitter.params,
+                                jac='3-point', verbose=1, ftol=1e-15, xtol=1e-14)# , diff_step=1)#, reduce_fcn=reduce_fct)#, fcn_args=args, fcn_kws=kws,
+            #self.fitter.params.pretty_print()
+            #mini.params['slope']
+                               #iter_cb=iter_cb, scale_covar=scale_covar, **fit_kws)
+            #self.fitter = minimize(model_residual_func, params,method=model, args=(time, self.f,),
+            #                    kws={'data':datasub, 'eps':None, 'weight':self.weight_sum}, nan_policy='omit',
+            #                    jac='3-point', verbose=1, ftol=1e-15, xtol=1e-12, diff_step=10)#, reduce_fcn=reduce_fct)#, fcn_args=args, fcn_kws=kws,
+            #                   #iter_cb=iter_cb, scale_covar=scale_covar, **fit_kws)
+
+        elif model == 'leastsq':
             self.fitter = mini.minimize(method=model,ftol=1e-15)#, reduce_fcn=reduce_fct)#, fcn_args=args, fcn_kws=kws,
                                #iter_cb=iter_cb, scale_covar=scale_covar, **fit_kws)
             #self.fitter = minimize(model_residual_func, params,method=model, args=(time, self.f,),
@@ -1475,6 +1495,7 @@ class Storm(object):
 
         else:
             #self.mini=mini # just for testing
+            self.write_log('- no error_estimate -')
             self.fitter_error=False
             # generate model function
             self.time_syntetic=np.arange(0,1, .01)
@@ -1486,7 +1507,9 @@ class Storm(object):
         #F.save_light(path=plotpath, name='gamma_JANSWA_result_all')
 
         #self.fitter.params.pretty_print()
+        print('create fit_dict')
         self.create_fit_dict()
+
 
     def error_estimator(self, mini, error_estimate, workers=1, steps=500 , nwalkers=None, set_initial=True, others=None):
         from time import clock
@@ -1509,8 +1532,8 @@ class Storm(object):
 
             print('init_pos shape' + str(init_pos.shape) )
 
-            #for k,p in self.prior.iteritems():
-            for k,p in self.fitter.params.iteritems():
+            #for k,p in self.prior.items():
+            for k,p in self.fitter.params.items():
 
                 #print(np.random.normal(0.0, p, error_nwalkers).shape )
                 best_guess_mean=p.value
@@ -1559,12 +1582,12 @@ class Storm(object):
             init_pos=None
 
         else:
-            seed=None
             init_pos=None
+            seed=None
 
         print('seed is '+ str(seed) )
         params=copy.deepcopy(self.fitter.params)
-        for key in params.iterkeys():
+        for key in iter(params):
             if key in error_estimate:
                 params[key].set(vary=True)
             else:
@@ -1591,13 +1614,17 @@ class Storm(object):
         """
         Create fitting statistics
         """
-        Jm_regulizer = self.minmodel.Jm_regulizer
+        from .models.JONSWAP_gamma import Jm_regulizer
 
         a                   = abs(M.nannormalize(self.fitter.residual))
         max3                = list(a[a.argsort()[::-1][0:3]])
 
         J_D_sqr             = np.sum( self.fitter.residual**2 ) # does only include data-model
-        if hasattr(self, 'prior') and (self.prior is not None):
+        # print(hasattr(self, 'prior'))
+        # print(self.prior is not False)
+        # print(self.prior)
+
+        if hasattr(self, 'prior') & (self.prior is not False) :
             J_M_sqr           = sum( [i**2 for i in Jm_regulizer(self.fitter.params.valuesdict(), self.prior)] ) # does only include data-model
             error_mean_model  = J_M_sqr / float(len(self.prior))
         else:
@@ -1625,7 +1652,7 @@ class Storm(object):
 
 
 
-        for key,item in self.fitter.__dict__.iteritems(): ## should be self.fitter.params.iteritem. this may grap the initial value!
+        for key,item in self.fitter.__dict__.items(): ## should be self.fitter.params.iteritem. this may grap the initial value!
             #print( '--')
             if (type(item) is list) or (type(item) is dict) or (type(item) is np.ndarray):
                 #print('Not')
@@ -1639,7 +1666,7 @@ class Storm(object):
 
         parameter_list=list()
         if self.fitter_error:
-            for key,item in self.fitter_error.params.iteritems():
+            for key,item in self.fitter_error.params.items():
                 #print( '--')
                 parameter_list.append(key)
                 if (type(item) is list) or (type(item) is dict) or (type(item) is np.ndarray):
@@ -1654,15 +1681,14 @@ class Storm(object):
         #same data std "scaler" in fit_dict
         fit_dict['factor']=self.factor
         fit_dict['max3'], fit_dict['normalized_chisqr'], fit_dict['error_frac'], fit_dict['error_frac_data'], fit_dict['error_mean_model'], fit_dict['chisqr_man'],  =self.simple_fitstats()
-        if 'errorbars' in fit_dict:
-            fit_dict['errorbars']= bool(fit_dict['errorbars'])
+
         self.fit_dict=fit_dict
 
     def plot_fitted_model(self, flim=(0.04,0.08), datasub=None, data_unit=None):
         import brewer2mpl
         import string
 
-        if hasattr(self, 'fitter_error') and (self.fitter_error is not False):
+        if hasattr(self, 'fitter_error') & (self.fitter_error is not False):
             fitter=self.fitter_error
         else:
             fitter=self.fitter
@@ -1671,8 +1697,8 @@ class Storm(object):
         #flim=(0.04,0.08)
 
         if datasub is None:
-            datasub=self.masked_data
-            datasub_less_noise=self.masked_data_less_noise
+            datasub=self.data_normalized
+            datasub_less_noise=self.data_normalized_less_noise
         else:
             datasub=datasub
             datasub_less_noise=datasub
@@ -1693,7 +1719,7 @@ class Storm(object):
         cmap = brewer2mpl.get_map('Spectral', 'diverging', 6, reverse=True).mpl_colormap
         cmap.set_bad('white')
 
-        fig=M.figure_axis_xy(8, 12, fig_scale=1, container=True, view_scale=.5)
+        fig=M.figure_axis_xy(8, 12, fig_scale=1, container=True, view_scale=.35)
         plt.suptitle(self.ID +' | '+str(self.time_dict['dt64'][int(self.time_dict['dt64'].size/2)].astype('M8[h]')) +
                         '\n redchi=' +str(round(self.fit_dict['redchi'],3))
                         +', normalized chisqrt=' +str(round(self.fit_dict['normalized_chisqr'],3))
@@ -1714,7 +1740,7 @@ class Storm(object):
         #plt.xlabel(xlabelstr)
         plt.ylim(flim)
         #plt.grid()
-        plt.title(fn.next()+' '+'Initalized Model and data 2D', loc='left', y=1.02)
+        plt.title(next(fn)+' '+'Initalized Model and data 2D', loc='left', y=1.02)
 
 
         # Model and Data in 2D
@@ -1728,7 +1754,7 @@ class Storm(object):
         self.plot_line_params(time, self.fitter.params['slope'].value, self.fitter.params['intersect'], c='white', alpha=0.5)
 
         plt.contour(self.time_syntetic,f,self.model_result.reshape(self.time_syntetic.size, f.size).T, colors='black', alpha=0.5)
-        self.plot_line_params(time, fitter.params['slope'].value, fitter.params['intersect'], c='r')
+        self.plot_line_params(time, fitter.params['slope'].value, fitter.params['intersect'].value, c='r')
         self.plot_line_params(time, fitter.params['slope'].value , self.cal_intersect_adjust(fitter.params), c='r', alpha=0.7)
         #
 
@@ -1736,26 +1762,58 @@ class Storm(object):
         #plt.xlabel(xlabelstr)
         plt.ylim(flim)
         #plt.grid()
-        plt.title(fn.next()+' '+'Model and Data in 2D', loc='left', y=1.02)
+        plt.title(next(fn)+' '+'Model and Data in 2D', loc='left', y=1.02)
 
+        # Init data and mask time mean
+        S3 = plt.subplot2grid((5,2), (2, 0),rowspan=1,facecolor='w', colspan=1 )
+        init_model_mean = np.nanmean(self.model_init.reshape(self.time.size, f.size).T,1)
+        init_model_max = np.nanmax(self.model_init.reshape(self.time.size, f.size).T,1)
+        init_data_mean= np.nanmean(datasub_less_noise.T,1)
+        init_data_min= np.nanmin(datasub_less_noise.T,1)
+        init_data_max= np.nanmax(datasub_less_noise.T,1)
+
+        plt.plot(f, init_model_max, c='k',alpha=0.4, label='model max')
+
+        plt.fill_between(f, init_data_min, init_data_max, color='lightblue', alpha=0.8, label='data min-max')
+        plt.plot(f,init_data_mean, 'b', label='data mean')
+        #plt.plot(datasub.reshape(datasub.shape[0]*datasub.shape[1]), c='b',  alpha=0.5, label='data')
+        plt.title(next(fn)+' '+'Initial time mean', loc='left', y=1.06)
+        plt.ylabel('non-dim Spectral Energy')
+        plt.legend()
+        plt.ylim(0, init_data_mean.max()*2.5)
 
         # Init data in 1D
-        S3 = plt.subplot2grid((5,2), (2, 0),rowspan=1,facecolor='w', colspan=1 )
-        plt.plot(self.model_init, c='k',alpha=0.4, label='model')
-        plt.plot(datasub.reshape(datasub.shape[0]*datasub.shape[1]), c='b',  alpha=0.5, label='data')
-        plt.title(fn.next()+' '+'Initial Model and Data in 1D', loc='left', y=1.06)
-
-        plt.legend()
+        # S3 = plt.subplot2grid((5,2), (2, 0),rowspan=1,facecolor='w', colspan=1 )
+        # plt.plot(self.model_init, c='k',alpha=0.4, label='model')
+        # plt.plot(datasub.reshape(datasub.shape[0]*datasub.shape[1]), c='b',  alpha=0.5, label='data')
+        # plt.title(next(fn)+' '+'Initial Model and Data in 1D', loc='left', y=1.06)
+        #
+        # plt.legend()
 
 
         # Model and Data in 1D
         S4 = plt.subplot2grid((5,2), (2, 1),rowspan=1,facecolor='w', colspan=1 )
-        plt.plot(self.model_result_corse, c='k', label='model',  alpha=0.4,)
-        plt.plot(datasub.reshape(datasub.shape[0]*datasub.shape[1]), c='b', alpha=0.5, label='data')
-        #plt.plot(abs(model_result_corse/datasub.reshape(datasub.shape[0]*datasub.shape[1])), c='b', alpha=0.5, label='model/data')
+
+        model_mean = np.nanmean(self.model_result_corse.reshape(self.time.size, f.size).T,1)
+        model_max = np.nanmax(self.model_result_corse.reshape(self.time.size, f.size).T,1)
+        init_data_mean= np.nanmean(datasub_less_noise.T,1)
+        init_data_min= np.nanmin(datasub_less_noise.T,1)
+        init_data_max= np.nanmax(datasub_less_noise.T,1)
+
+        plt.plot(f, model_max, c='k',alpha=0.4, label='model max')
+
+        plt.fill_between(f, init_data_min, init_data_max, color='lightblue', alpha=0.8, label='data min-max')
+        plt.plot(f,init_data_mean, 'b', label='data mean')
+        #plt.plot(datasub.reshape(datasub.shape[0]*datasub.shape[1]), c='b',  alpha=0.5, label='data')
+        plt.ylabel('non-dim Spectral Energy')
         plt.legend()
+        plt.ylim(0, init_data_mean.max()*2.5)
+
+        #plt.plot(self.model_result_corse, c='k', label='model',  alpha=0.4,)
+        #plt.plot(abs(model_result_corse/datasub.reshape(datasub.shape[0]*datasub.shape[1])), c='b', alpha=0.5, label='model/data')
+        #plt.legend()
         #plt.ylim(0, 100)
-        plt.title(fn.next()+' '+'Fitted Model and Data in 1D', loc='left', y=1.06)
+        plt.title(next(fn)+' '+'Fitted Model time mean', loc='left', y=1.06)
 
         # weight
         S5 = plt.subplot2grid((5,2), (3, 0),rowspan=1,facecolor='w', colspan=1 )
@@ -1766,7 +1824,7 @@ class Storm(object):
         #plt.plot(self.weight_data1d, c='r', label='data weight')
         plt.legend()
         plt.ylim(0, np.max(self.weight_sum)*2)
-        plt.title(fn.next()+' '+'Weight in 1D', loc='left', y=1.02)
+        plt.title(next(fn)+' '+'Weight in 1D', loc='left', y=1.02)
         #plt.grid()
 
 
@@ -1786,16 +1844,17 @@ class Storm(object):
         plt.ylim(flim)
 
         #plt.grid()
-        plt.title(fn.next()+' '+'Residual in 2D without weigthing', loc='left', y=1.02)
+        plt.title(next(fn)+' '+'Residual in 2D without weigthing', loc='left', y=1.02)
 
 
 
         # time mean residual
         S6 = plt.subplot2grid((5,2), (4, 0),rowspan=1,facecolor='w', colspan=1 )
 
-        model_result_tmean=np.copy(self.model_result_corse)
-        model_result_tmean[self.nan_track]=np.nan
-        model_result_tmean=np.nanmean(model_result_tmean.reshape(self.time.size, f.size).T, 1)
+        model_result=np.copy(self.model_result_corse)
+        model_result[self.nan_track]=np.nan
+        model_result= model_result.reshape(self.time.size, f.size)
+        model_result_tmean=np.nanmean(model_result.T, 1)
         #model_tmean=np.nanmean(self.model_result.reshape(self.time_syntetic.size, f.size).T,1)
 
         #resid2=(datasub-self.model_result_corse.reshape(datasub.shape[0],datasub.shape[1])).T#self.weight_sum.reshape(time.size, f.size).T
@@ -1808,7 +1867,7 @@ class Storm(object):
         data_tmean=np.nanmean(datasub.T, 1)
         #plt.plot(f,  weight_tmean, label='diff')
 
-        plt.plot(f,model_result_tmean , label='model', c='k')
+        #plt.plot(f,model_result_tmean , label='model', c='k')
 
         #dd_mask=self.model_result_corse < np.percentile(self.model_result_corse,75)
         #dd_mask_2d=dd_mask.reshape(self.time.size, f.size).T
@@ -1818,26 +1877,28 @@ class Storm(object):
 
         #plt.plot(f,model_tmean_corse , label='model corse')
         #plt.plot(f,residual_tmean, label='residual func')
-        plt.plot(f,data_tmean, label='data' , c='b', alpha=0.5)
+        plt.plot(f,data_tmean, label='data' ,linestyle='--', c='b', alpha=0.5)
 
 
-        _, _, _, masked_data2=self.get_max_data()
-        plt.plot(f,    np.nanmean(  (masked_data2* self.factor).T , 1), label='data under Curve' , c='b')
+        _, _, _, masked_data2=self.get_max_data(data= datasub)
+        plt.plot(f,    np.nanmean(  (masked_data2* self.factor).T , 1), label='data (under model)' , c='b')
+        plt.plot(f,    np.nanmean(  np.where(~np.isnan(masked_data2), model_result, np.nan).T, 1),linestyle='-' , label='model' , c='k')
 
         plt.plot(f,-(data_tmean-model_result_tmean), label='residual')
 
-        plt.plot(f,residual_tmean, label='weighted residual' )
+        plt.plot(f,residual_tmean, label='weighted residual', c='green' )
         if hasattr(self, 'plain_fitter'):
             if hasattr(self.plain_fitter, 'model_timemean'):
                 plt.plot(f,self.plain_fitter.model_timemean, label='subtracted surface' )
         #plt.plot(f,-resid2_tmean, label='residual2' )
         plt.legend()
-        plt.xlim(flim)
+        plt.ylabel('non-dim Spectral Energy')
+        plt.xlim( f[~np.isnan(model_result_tmean)].min() , f[~np.isnan(model_result_tmean)].max() )
         pcut=M.cut_nparray(f, flim[0], flim[1])
-        lylim=np.max([model_result_tmean[pcut].min() ,model_result_tmean[pcut].max()])*1.3
-        plt.ylim(-lylim ,lylim)
+        #lylim=np.max([model_result_tmean[pcut].min() ,model_result_tmean[pcut].max()])*1.3
+        #plt.ylim(-lylim ,lylim)
 
-        plt.title(fn.next()+' '+'Time mean Residual', loc='left', y=1.06)
+        plt.title(next(fn)+' '+'Time mean Residual', loc='left', y=1.06)
         plt.xlabel(('f (Hz)'))
         plt.plot(f,data_tmean*0, c='grey' )
 
@@ -1869,9 +1930,7 @@ class Storm(object):
         cval=self.clevs#np.linspace(0, mmax, 31)
         sample_unit='s'
         data_unit='m'
-        #datalabel='Energy (' + data_unit + '^2/' + sample_unit+ ')'
-        datalabel='Energy (normalized)'
-
+        datalabel='Energy (' + data_unit + '^2/' + sample_unit+ ')'
         xlabelstr=('(Time)')
         cmap = brewer2mpl.get_map('Paired', 'qualitative', 6, reverse=False).mpl_colormap
         fig=M.figure_axis_xy(7, 4, fig_scale=1, container=True, view_scale=.5)
@@ -1960,6 +2019,8 @@ class Storm(object):
         plt.subplots_adjust(left=None, bottom=None, right=None, top=.9,
                         wspace= 0.25, hspace=.5)
 
+        fig.S1=S2
+        fig.S2=S6
         return fig
 
     def plot_fit_hist(self, hist_dict_org,flim=None, datasub=None, k=False):
@@ -2452,7 +2513,7 @@ class Storm(object):
         else:
             s=[ "slope (time_unit/sec)", "Initial Time (time_unit)",  "Initial Time Peak([])", "Storms time delta", "Stroms geo t0"]
             SM_dict_pandas = pd.DataFrame({'unit':s} , index=[ 'dfdt', 't0', 't0_peak', 'DT', 'frame_t0']).T #, columns= ['units']
-            SM_dict_pandas.loc['unit'] = SM_dict_pandas.loc['unit'].astype('category')
+            SM_dict_pandas.loc['unit'] = df2.loc['unit'].astype('category')
 
         for key in self.time_dict.keys():
             if key ==  'datetime':
@@ -2469,7 +2530,7 @@ class Storm(object):
                 t0_peak  =   Dt *  intersect_adjusted  +  T0
 
                 #print(Dt , type(Dt), key)
-                if key in ['dt64','time']:
+                if key == 'dt64':
                     dfdt=    -999
                 else:
                     dfdt=    params['slope'].value / Dt
@@ -2488,7 +2549,7 @@ class Storm(object):
                         t0_std=Dt * delt0
 
 
-                        if key in ['dt64','time']:
+                        if key == 'dt64':
                             dtdf_std=-999
                         else:
                             #dTdf_std= abs(dels /(params['slope'].value**2 ))
@@ -2615,13 +2676,32 @@ class Storm(object):
             self.SM_dict['angle2']=None
             self.SM_dict_pandas['angle2']=None
 
-    def get_max_data(self, data=None, tresh_perc=75, noise_perc=50 , plot_flag=False):
+    def get_max_model(self,timeaxis=None):
+        """
+        This fuction returns the maximum point of the model as a tuple (time (dt64), f)
+        inputs:
+        timeaxis    (None) if None, self.time_dict['dt64'] is used. otherwise timeaxis is used.
+        returns:
+        tuple       (time of maximum model value, frequency of maximum model value)
+        """
+        if timeaxis is None:
+            timeaxis=self.time_dict['dt64']
+        else:
+            timeaxis=timeaxis
+
+        model_mask_2d   = self.model_result_corse.reshape(self.time.size, self.f.size)
+        pos_tuple       = np.where(model_mask_2d == model_mask_2d.max())
+
+        return timeaxis[pos_tuple[0][0]], self.f[pos_tuple[1][0]]
+
+
+    def get_max_data(self, data=None, tresh_perc=65, noise_perc=50 , plot_flag=False):
         """
         This function returns the maximum Spectrum of the data under the fitted model function, as well as the data under the model
 
         Inputs:
         S           Storm class
-        data        (default) S.masked_data_less_noise The data where the maximu is picked from
+        data        (default) self.data_normalized_less_noise * self.data_std The data where the maximu is picked from
         tresh_perc  used to define the contour which seperates the data area from the Noise
                     tresh_perc is a percentile of the model data points that should be included by this contour
         noise_perc  Not used atm
@@ -2638,14 +2718,13 @@ class Storm(object):
 
         """
 
-
         if hasattr(self, 'fitter_error'):
             fitter=self.fitter_error
         else:
             fitter=self.fitter
 
 
-        data=self.masked_data_less_noise if data is None else data
+        data=self.data_normalized_less_noise * self.data_std if data is None else data
         tresh=np.percentile(self.model_result_corse,tresh_perc)
         model_mask=self.model_result_corse < tresh
         model_mask_2d=model_mask.reshape(self.time.size, self.f.size)
@@ -2658,13 +2737,13 @@ class Storm(object):
         signal_level=np.nanmean(np.nanmean(masked_data2))
 
         if plot_flag:
-            self.plot_fitsimple(datasub=masked_data2* self.factor)
+            F= self.plot_fitsimple(datasub=masked_data2* self.factor)
 
         dd=np.nanmean(masked_data2,0)
         if np.isnan(dd).sum() == dd.size:
             self.write_log('no max data found because data under model is nan')
             tmax=dict()
-            for k,T in self.time_dict.iteritems():
+            for k,T in self.time_dict.items():
                 tmax[k]=np.nan
 
             return np.nan, np.nan, tmax, masked_data2
@@ -2678,8 +2757,11 @@ class Storm(object):
         tmaxpos=np.where(np.min(abs(red_line-fmax))==abs(red_line-fmax))[0][0]
 
         tmax=dict()
-        for k,T in self.time_dict.iteritems():
+        for k,T in self.time_dict.items():
             tmax[k]=T[tmaxpos]
+
+        if plot_flag:
+            F.S1.plot(tmax['dt64'], fmax, '.r', MarkerSize=20)
 
         return dd[pp], fmax, tmax, masked_data2
 
@@ -2702,6 +2784,24 @@ class Storm(object):
         intersectF = - intersect * slope
         pfreq      =  time * slope + intersectF
         plt.plot(time, pfreq,  *args, **kwargs)
+
+    def get_line_params(self,time, slope, intersect, *args, **kwargs):
+        """
+        This method is a wrapper for plotting the sloped from the parameters slope and intersect
+        inputs:
+        time             time vector. For params, use normalized time [0, 1] np.array
+        slope            slope of the "dispersed peak frequencies" df/dt [Hz/ normalized time]
+        intersect        intersect with the time axis in units of normalized time
+        **kargs          are passed to plt.plot routine
+
+        returns:
+        None
+
+        """
+        intersectF = - intersect * slope
+        pfreq      =  time * slope + intersectF
+        return time, pfreq
+
 
     def plot_line_params_realtime(self,time=None, *args, **kwargs):
         """
@@ -2755,7 +2855,7 @@ class station_stats(object):
 
         self.ID=ID
         self.hist='------ | '+ self.ID
-        self.write_log('initialized')
+        log= self.write_log('initialized')
         self.save_path=None if save_path is None else save_path
         self.plot_path=None if plot_path is None else plot_path
 
@@ -2764,7 +2864,7 @@ class station_stats(object):
 
         #self.L=None
 
-    def create_estimates_table(self, stormlist, r_units='deg'):
+    def create_estimates_table(self, stormlist):
         import pandas as pd
         #Create Table
         self.write_log('Create table with Storm Estimames')
@@ -2774,32 +2874,26 @@ class station_stats(object):
             try:
                 S=MT.h5_load(storm, self.save_path)
                 if 'angle1' in S.T.index:
-                    L1[storm]=[S['t0']['dt64'],S['t0_std']['dt64'], S['t0_std']['day'],    S['r0']['sec'],  S['r0_std']['sec'],     S['r0_deg']['sec'] , S['r0_deg_std']['sec'], S['angle1']['sec'],  S['angle2']['sec']  ]
+                    L1[storm]=[S['t0']['dt64'],S['t0_std']['dt64'], S['t0_std']['sec']/60.00,    S['r0']['sec'],  S['r0_std']['sec'],     S['r0_deg']['sec'] , S['r0_deg_std']['sec'], S['angle1']['sec'],  S['angle2']['sec']  ]
                 else:
-                    L1[storm]=[S['t0']['dt64'],S['t0_std']['dt64'], S['t0_std']['day'],    S['r0']['sec'],  S['r0_std']['sec'],     S['r0_deg']['sec'] , S['r0_deg_std']['sec'], None, None ]
+                    L1[storm]=[S['t0']['dt64'],S['t0_std']['dt64'], S['t0_std']['sec']/60.00,    S['r0']['sec'],  S['r0_std']['sec'],     S['r0_deg']['sec'] , S['r0_deg_std']['sec'], None, None ]
             except:
                 print('fail to load', storm)
                 self.write_log('fail to load '+ storm)
                 pass
 
         # Convert Errors estimates in Boundaries
-        stdfac=1 # Thisis a adjustment factor, since the Error is just too large!
-        #self.write_log('use adjusting factor for uncertainties, they are off!')
+        stdfac=3 # Thisis a adjustment factor, since the Error is just too large!
+        self.write_log('use adjusting factor for uncertainties, they are off!')
 
         L1.loc['timelB']= [-L1.loc['t0_std'][k]*stdfac+L1.loc['t0'][k] for k in range(L1.shape[1])]
         L1.loc['timeuB']= [+L1.loc['t0_std'][k]*stdfac+L1.loc['t0'][k] for k in range(L1.shape[1])]
 
         #(L1.loc['timeuB']-L1.loc['timelB'])#/(60*60*24)
 
-        stdfac=1 # Thisis a adjustment factor, since the Error is just too large!
-        if r_units == 'deg':
-            L1.loc['radiallB']= [-L1.loc['r0_deg_std'][k]*stdfac+L1.loc['r0_deg'][k] for k in range(L1.shape[1])]
-            L1.loc['radialuB']= [+L1.loc['r0_deg_std'][k]*stdfac+L1.loc['r0_deg'][k] for k in range(L1.shape[1])]
-        elif r_units == 'm':
-
-            L1.loc['radiallB']= [-L1.loc['r0_std'][k]*stdfac+L1.loc['r0'][k] for k in range(L1.shape[1])]
-            L1.loc['radialuB']= [+L1.loc['r0_std'][k]*stdfac+L1.loc['r0'][k] for k in range(L1.shape[1])]
-
+        stdfac=3 # Thisis a adjustment factor, since the Error is just too large!
+        L1.loc['radiallB']= [-L1.loc['r0_std'][k]*stdfac+L1.loc['r0'][k] for k in range(L1.shape[1])]
+        L1.loc['radialuB']= [+L1.loc['r0_std'][k]*stdfac+L1.loc['r0'][k] for k in range(L1.shape[1])]
 
         self.single_storm=MT.h5_load(stormlist[0], self.save_path)
         hist, self.single_storm_meta=MT.json_load(stormlist[0], self.save_path)
@@ -2809,7 +2903,7 @@ class station_stats(object):
         import pandas as pd
 
         self.write_log('Create table for maximal datapoint')
-        Ldata_max= pd.DataFrame(index=[ 'datamax',  'fmax' , 'tmax_dt64' , 'tmax_sec' ]) #, columns= ['units']
+        Ldata_max= pd.DataFrame(index=[ 'datamax',  'fmax' , 'tmax_dt64' ,  'tmax_normalized' , 'tmax_sec' ]) #, columns= ['units']
 
         masked_data_dict=dict()
         for s in stormlist:
@@ -2818,7 +2912,7 @@ class station_stats(object):
 
             #S.plot_fitsimple()
             if data == 'less_noise':
-                data=S.masked_data_less_noise
+                data=S.data_normalized_less_noise * S.data_std
                 #print('used masked less noise data')
 
             elif data == 'masked':
@@ -2831,7 +2925,7 @@ class station_stats(object):
             Smax, fmax, tmax, masked_data2 =S.get_max_data( data=data )
             if sum(np.isnan([Smax, fmax])) == 2:
                 self.write_log(S.ID +' model above none - nop max data')
-            Ldata_max[s]=[Smax , fmax, tmax['dt64'], tmax['sec'] ]
+            Ldata_max[s]=[Smax , fmax, tmax['dt64'], tmax['normalized'],  tmax['sec'] ]
 
             if return_data:
                 masked_data_dict[s]={'masked_data':masked_data2, 'f':S.f, 'time':S.time_dict}
@@ -2949,10 +3043,10 @@ class station_stats(object):
 
         return Lparams
 
-    def create_tables(self, stormlist, r_units='m'):
+    def create_tables(self, stormlist):
         from pandas import concat
         self.write_log('create all Tables')
-        L1=self.create_estimates_table(stormlist, r_units=r_units)
+        L1=self.create_estimates_table(stormlist)
         L2=self.create_fitting_stats_table(stormlist)
         Lparams=self.create_params_table(stormlist)
         Ldata_max=self.create_max_data_table(stormlist)
@@ -2962,10 +3056,8 @@ class station_stats(object):
         #L = concat([L1, L2, Lparams], keys=['estimates', 'params', 'storms'])
         self.L=L.transpose()
 
-    def plot_first_overview(self, L1=None, sation_lat=-78.18,lat_lim=(-80,90), uunits=('Time', 'm') ):
+    def plot_first_overview(self, L1=None, sation_lat=-78.18,lat_lim=(-80,90) ):
         from matplotlib import colors
-        from decimal import Decimal
-
         self.write_log('Statio latitude is at '+ str(sation_lat))
 
         if L1 is not None:
@@ -2977,25 +3069,25 @@ class station_stats(object):
         else:
             raise Exception("Please assign a pandas dataframe to L1 or make shure that L is propper build")
 
-        # if hasattr(self, 'single_storm'):
-        #     S=self.single_storm
-        # else:
-        #     raise Exception("Please assign a single pandas dict (Storm.Storm.SM_dict_pandas) to self.single_storm before executing this function")
+        if hasattr(self, 'single_storm'):
+            S=self.single_storm
+        else:
+            raise Exception("Please assign a single pandas dict (Storm.Storm.SM_dict_pandas) to self.single_storm before executing this function")
 
         F=M.figure_axis_xy(12, 4, fig_scale=1, container=True, view_scale=.5)
         plt.suptitle(self.ID+ ' Overview | total='+str(L1.shape[1]) )#, ha='left', x=.05)
-        unit_scaler=1e5 # meters to 100km
+
         # Initalized model and data 2D
         S1 = plt.subplot2grid((1,7), (0, 0),rowspan=1,facecolor='w', colspan=4 )
         S1=M.subplot_routines(S1)
         for k in range(L1.shape[1]):
-            plt.plot([L1.loc['timelB'][k],L1.loc['timeuB'][k] ], [ (L1.loc['r0'][k] / unit_scaler) + sation_lat, (L1.loc['r0'][k]/unit_scaler) +sation_lat ], c='k' )
-            plt.plot([ L1.loc['t0'][k], L1.loc['t0'][k] ]  ,  [ (L1.loc['radiallB'][k] / unit_scaler) +sation_lat, (L1.loc['radialuB'][k]/unit_scaler) +sation_lat ], c='r' )
+            plt.plot([L1.loc['timelB'][k],L1.loc['timeuB'][k] ], [L1.loc['r0_deg'][k]+sation_lat, L1.loc['r0_deg'][k]+sation_lat ], c='k' )
+            plt.plot([ L1.loc['t0'][k], L1.loc['t0'][k] ]  ,  [L1.loc['radiallB'][k]+sation_lat,L1.loc['radialuB'][k]+sation_lat ], c='r' )
 
-        plt.plot( L1.loc['t0'], sation_lat + L1.loc['r0']/unit_scaler,'.', c='k', MarkerSize=3 )
+        plt.plot( L1.loc['t0'],L1.loc['r0_deg']+sation_lat,'.', c='k', MarkerSize=3 )
 
-        plt.xlabel(uunits[0])
-        plt.ylabel('%.1E' % Decimal(1e5) + ' '+ uunits[1])
+        plt.xlabel(S['t0']['unit'])
+        plt.ylabel(S['r0_deg']['unit'])
         plt.title('\nRadial Distance and Time', loc='left')
         plt.grid()
         plt.ylim(lat_lim)
@@ -3005,8 +3097,8 @@ class station_stats(object):
         S2=M.subplot_routines(S2)
         plt.title('# of Storms', loc='left')
 
-        bins=np.linspace(0, lat_lim[1], 20)
-        H=plt.hist(sation_lat + L1.loc['r0']/unit_scaler, bins, orientation="horizontal")
+        bins=np.arange(-80, lat_lim[1], 2)
+        H=plt.hist(L1.loc['r0_deg']+sation_lat, bins, orientation="horizontal", color='black')
         plt.grid()
         plt.ylim(lat_lim)
         plt.xlabel('# Storms /L1atitude')
@@ -3017,7 +3109,7 @@ class station_stats(object):
         S3 = plt.subplot2grid((1,7), (0, 5),rowspan=1,facecolor='w', colspan=1 )
         S3=M.subplot_routines(S3)
         plt.title('Radial Distance Error', loc='left')
-        H=plt.hist2d(list(L1.loc['r0_std']/unit_scaler),list(sation_lat + L1.loc['r0']/unit_scaler) , bins=(20, bins), norm=colors.LogNorm())
+        H=plt.hist2d(list(L1.loc['r0_std']/1000.0),list(L1.loc['r0_deg']+sation_lat), bins=(20, bins), norm=colors.LogNorm())
         plt.grid()
         plt.ylim(lat_lim)
         plt.xlabel('Std (km)')
@@ -3027,7 +3119,7 @@ class station_stats(object):
         S4 = plt.subplot2grid((1,7), (0, 6),rowspan=1,facecolor='w', colspan=1 )
         S4=M.subplot_routines(S4)
         plt.title('Inital Time Error ', loc='left')
-        H=plt.hist2d(list(L1.loc['t0_std']/ np.timedelta64(1, 'h')),list(L1.loc['r0']/unit_scaler+sation_lat), bins=(20, bins), norm=colors.LogNorm())
+        H=plt.hist2d(list(L1.loc['t0_std']/ np.timedelta64(1, 'h')),list(L1.loc['r0_deg']+sation_lat), bins=(20, bins), norm=colors.LogNorm())
         plt.grid()
         plt.xlabel('Std (hours)')
 
@@ -3172,12 +3264,16 @@ class station_stats(object):
         #self.write_log('all storms plotted and save at saved at '+self.save_path+name)
 
 
-    def save(self):
+    def save(self, path=None):
         import warnings
         import pandas as pd
         warnings.filterwarnings("ignore")
 
-        save_path_local=self.save_path+'stats/'
+        if path is not None:
+            save_path_local = path
+        else:
+            save_path_local = self.save_path+'stats/'
+
         MT.mkdirs_r(save_path_local)
         name=self.ID+'_tables_master'
 
@@ -3203,7 +3299,7 @@ class station_stats(object):
 
         if hasattr(self, 'hist_dict'):
             hist_dict2=dict()
-            for k, I in self.hist_dict.iteritems():
+            for k, I in self.hist_dict.items():
                 print(k + 'to hist_dict2')
                 hist_dict2[k]=[I[0].tolist(),I[1].tolist() ]
         else:
@@ -3230,12 +3326,12 @@ class station_stats(object):
         self.stormlist,self.hist_dict2,self.stat_keys =MT.json_load(save_path_local+name, save_path_local)
         self.hist=MT.load_log_txt(self.ID+'.hist.txt', save_path_local)
 
-        print(self.hist_dict2)
+        #print(self.hist_dict2)
 
         if hasattr(self, 'hist_dict2') and self.hist_dict2 != 0:
             print('self has attribute hist_dict2')
             self.hist_dict=dict()
-            for k, I in self.hist_dict2.iteritems():
+            for k, I in self.hist_dict2.items():
                 self.hist_dict[k]=(np.array(I[0]),np.array(I[1]) )
         else:
             print('self.hist_dict2  does not exist')
@@ -3251,6 +3347,7 @@ class station_stats(object):
         #print('.hist variable')
         print(self.hist)
 
+
 def stormlist_plotter_with_hists(listname, stormlist, save_path, hist_dict,  save=False, plot_path=None):
     for SID in stormlist:
         S=Storm(SID)
@@ -3260,6 +3357,7 @@ def stormlist_plotter_with_hists(listname, stormlist, save_path, hist_dict,  sav
             if plot_path is None:
                 raise ValueError("define plot_path")
             F.save_light(name=SID+'.ov', path=plot_path+'/'+listname)
+
 
 def stormlist_plotter(listname, stormlist, save_path , hist_dict=None, save=False, plot_path=None):
     for SID in stormlist:
@@ -3283,6 +3381,7 @@ def stormlist_plotter(listname, stormlist, save_path , hist_dict=None, save=Fals
         #     print(S.ID+ ' obmitted')
     return F
 
+
 def find_systems_by_time(DD, tmin, tmax):
         """
         input:
@@ -3295,7 +3394,7 @@ def find_systems_by_time(DD, tmin, tmax):
         D       dict that containsp cyclonetracks in that hace at least 1 timestep in the tmin-tmax window
         """
         D=dict()
-        for k, I in DD.iteritems():
+        for k, I in DD.items():
             ttime=np.array(I.data['timestamp'])
             if tmin == tmax:
                 if (  tmin > ttime[0]  )  & (  tmin < ttime[-1]  ):
@@ -3349,7 +3448,7 @@ class Storm_match(Storm):
             D       dict that containsp cyclonetracks in that hace at least 1 timestep in the tmin-tmax window
             """
             D=dict()
-            for k, I in DD.iteritems():
+            for k, I in DD.items():
                 ttime=np.array(I.data['timestamp'])
                 if tmin == tmax:
                     if (  tmin > ttime[0]  )  & (  tmin < ttime[-1]  ):
@@ -3408,6 +3507,7 @@ class Storm_match(Storm):
                       a dict with statistics about the matched storm Tracks_stats
 
          """
+        import m_earth_geometry as M_geo
 
         self.Tracks_stats=dict()
         self.Tracks_matched=dict()
@@ -3416,10 +3516,10 @@ class Storm_match(Storm):
         tracks=self.Tracks_all if tracks is None else tracks
         errorlimts=self.errorlimts if errorlimts is None else errorlimts
 
-        for TK_name, TK in tracks.iteritems():
+        for TK_name, TK in tracks.items():
             track_stats=dict()
             track_matched=dict()
-            for TID, Track_system in TK.iteritems():
+            for TID, Track_system in TK.items():
                 Track=Track_system.data
                 # calculate radial distance to Station
                 Track['Radial_to_S']    =Track.apply(lambda row:   M_geo.haversine(   Station_pos[0],   Station_pos[1], row['long'], row['lat'] ) *1000.0    , axis=1) # Haversine formula returns km
@@ -3517,6 +3617,7 @@ class Storm_match(Storm):
         tracks        a Systemtrack object that contains tracks
 
         """
+        import m_earth_geometry as M_geo
         from AA_plot_base import rosssea_map_plotter
         from m_earth_geometry import create_great_cirle_on_map
         inensity_scaler=45.0
@@ -3819,6 +3920,7 @@ class Storm_match(Storm):
         plt.title(fn2.next() + ' Matched Stormtrack quantities \n   ' ,loc='left')
         return fig
 
+
 class Fetch_Propability(object):
     def __init__(self,SID):
         self.ID=SID
@@ -3827,7 +3929,8 @@ class Fetch_Propability(object):
 
         self.fitter_error     = fitter_error
         self.converted_chain  = self.convert_slope_intersect_to_MS1957(self.fitter_error.flatchain['slope'], self.fitter_error.flatchain['intersect'],timeaxis)
-        self.data  , self.time= self.create_rt0_propabilities(self.converted_chain, params_dict)
+        self.converted_chain
+        self.data  , self.time           = self.create_rt0_propabilities(self.converted_chain, params_dict)
 
         self.params_dict      = params_dict
 
@@ -3836,9 +3939,9 @@ class Fetch_Propability(object):
     def plot_inital(self, save_path=False):
         F=M.figure_axis_xy(x_size=5,  y_size=5, view_scale=.5)
         plt.suptitle(self.ID +' | Initital Intersect-Slope PDF \n' +
-                ' correlation:' + str( round(self.fitter_error.params['slope'].correl['intersect'], 2)) , y=1.06)
+                ' correlation:' + str( round(S.fitter_error.params['slope'].correl['intersect'], 2)) , y=1.06)
 
-        M.plot_scatter_2d(self.fitter_error.flatchain['intersect'], self.fitter_error.flatchain['slope'], xname='intersect', yname='slope')
+        plot_scatter_2d(self.fitter_error.flatchain['intersect'], self.fitter_error.flatchain['slope'], xname='intersect', yname='slope')
 
 
         if save_path is not False:
@@ -3859,12 +3962,14 @@ class Fetch_Propability(object):
                               np.datetime64( table['t0_ns'].astype('datetime64[ns]').quantile(qlim[1]) ).astype('M8[h]'))
         xbins               =np.arange(xlim[0], xlim[1],time_resolution ).astype('M8[m]')
         #print(xbins)
-        r0_range    = np.arange(0, 180*110*1000, radial_resolution)
+        r0_range    = np.arange(0, 60*110*1000, radial_resolution)
+
         a   =r0_range-table['r0'].quantile(qlim[0])
         b   =r0_range-table['r0'].quantile(qlim[1])
 
         ylim=(r0_range[np.unravel_index(np.abs(a).argmin(),np.transpose(a.shape))],  r0_range[np.unravel_index(np.abs(b).argmin(),np.transpose(b.shape))] )
         ybins=np.arange(ylim[0], ylim[1], radial_resolution)
+        #print(ybins)
         h=np.histogram2d(table['t0'].astype(int) ,table['r0'], bins=(xbins.astype('datetime64[ns]').astype(int), ybins) )
 
         if xarray:
@@ -3998,6 +4103,7 @@ class Fetch_Propability(object):
         self.data=xr.open_dataset(file_path)
         #self.data.close()
 
+
 class Storm_match_pdf(Fetch_Propability):
     def __new__(cls, Fetch_Propability, tracks, tracks_name):
         Fetch_Propability.__class__ = cls
@@ -4113,7 +4219,7 @@ class Storm_match_pdf(Fetch_Propability):
         returns:
         fetchtable
         """
-
+        import m_earth_geometry as M_geo
         fetchtable['U_X']          = fetchtable['wspeed_mean']* [np.sqrt(i) for i in fetchtable['area_m2']]
         fetchtable['non_dim_fetch']= fetchtable.apply(lambda row: 9.81 *np.sqrt(row['area_m2']) / row['wspeed_mean']**2     , axis=1)
         fetchtable['non_dim_fetch_umax']= fetchtable.apply(lambda row: 9.81 *np.sqrt(row['area_m2']) / row['wspeed_max']**2     , axis=1)
@@ -4142,11 +4248,11 @@ class Storm_match_pdf(Fetch_Propability):
                       track.fetches as the table of the fetches belonging to this stormtrack
         fail_list     list of storm where fetches couldn't be found
          """
-
+        #import m_earth_geometry as M_geo
         tracks=self.Tracks if tracks_in is None else tracks_in
         fail_list=list()
-        for TK_name, TK in tracks.iteritems():
-            for CID, Track_system in TK.iteritems():
+        for TK_name, TK in tracks.items():
+            for CID, Track_system in TK.items():
                 print(CID)
                 # load fetch table for CID
                 #try:
@@ -4211,11 +4317,11 @@ class Storm_match_pdf(Fetch_Propability):
     #
     #     FpSID=False
     #
-    #     for TK_name, TK in tracks.iteritems():
+    #     for TK_name, TK in tracks.items():
     #         Fetches_per_track=dict()
     #         Track_system_matched=dict()
     #
-    #         for CID, Track_system in TK.iteritems():
+    #         for CID, Track_system in TK.items():
     #
     #             print(CID)
     #             Track=Track_system.data
@@ -4277,7 +4383,7 @@ class Storm_match_pdf(Fetch_Propability):
     #
     #                     #print( str(SID)  , STID_local, 'pos 3.2')
     #                     # select fectches that fit
-    #                     for fetchID, F1 in all_fetches.iteritems():
+    #                     for fetchID, F1 in all_fetches.items():
     #                         Fetches_per_track[CID+'.'+ fetchID]=F1.create_table(
     #                                                     grids=datapar['grids'],
     #                                                     lonlatbox=params['lonlatbox'],
@@ -4305,7 +4411,7 @@ class Storm_match_pdf(Fetch_Propability):
     #     return Track_system_matched, FpSID
 
 
-    def derive_best_match(self, FT, long_boundaries=None, prop_tresh=0.001):
+    def derive_best_match(self, FT, long_boundaries=None, prop_tresh=0.001, cylone_speed=10):
         """
         the method derives the best match given
         inputs:
@@ -4321,9 +4427,6 @@ class Storm_match_pdf(Fetch_Propability):
         best_fetch_evolution    (beta) a table that only copntains the evolution of the
                                 fetch that matches the best (there is no
                                 unique identifyer for each fetch)
-
-        prop_match              True if matched by propability, False else
-        coast_dict
         """
 
 
@@ -4338,28 +4441,13 @@ class Storm_match_pdf(Fetch_Propability):
             else:
                 box_flag = True
 
+            time_flag       = (data.time[0] < time) & (data.time[-1] > time)
+            radius_flug     = (data.radius[0] < radius) & (data.radius[-1] > radius)
 
-            if (data.time[0] < time)  & (data.time[-1] > time) & topo_flag & box_flag:
-                #print('within time limits')
+            if (time_flag & radius_flug & topo_flag & box_flag):
+                #print('within limits')
                 #print((data.time[0] < time)  & (data.time[-1] > time))
-                #rint(data.time[0])
-                #print('time at this itteration:' + str(time))
-                #print('radial index' + str(rad_index))
-
-                #print(data.sel(time=slice(time), radius=data.radius[rad_index]).data)
-                try:
-
-                    #print('exact data point is')
-                    #print(str(data.sel(time=time, radius=data.radius[rad_index]).data))
-
-                    return data.sel(time=time, radius=data.radius[rad_index]).data
-
-                except:
-                    print('sliced timestep')
-                    #print('slice data point is')
-                    #print(str(data.sel(time=slice(time), radius=data.radius[rad_index]).mean().data))
-
-                    return data.sel(time=slice(time), radius=data.radius[rad_index]).mean().data
+                return data.sel(time=time, radius=data.radius[rad_index]).data
             else:
                 return 0
 
@@ -4371,9 +4459,10 @@ class Storm_match_pdf(Fetch_Propability):
             else:
                 box_flag = True
 
-
-            if (data.time[0] < time)  & (data.time[-1] > time) & ~topo_flag & box_flag:
-                #print('within time limits')
+            time_flag= (data.time[0] < time) & (data.time[-1] > time)
+            radius_flug = (data.radius[-1] > radius) & (data.radius[0] < radius)
+            if time_flag & radius_flug & ~topo_flag & box_flag:
+                #print('within time limits coast')
                 #print((data.time[0] < time)  & (data.time[-1] > time))
                 return data.sel(time=time, radius=data.radius[rad_index]).data
             else:
@@ -4386,7 +4475,7 @@ class Storm_match_pdf(Fetch_Propability):
             else:
                 box_flag = True
 
-            dt=timedist_to_max(max_time,timestamp )
+            dt=timedist_to_max(max_time,timestamp, cspeed=cylone_speed )
             #dt_time=(timestamp.astype('M8[h]') - np.datetime64( max_time.astype('M8[h]').item() ) ).astype('m8[s]')/np.timedelta64(1, 's') # in seconds
             #cyclones_speed=20.0 # m/s # assuming a mean cyclones speed of 80 km/h = 22 m/s
             #dt = dt_time* cyclones_speed
@@ -4398,9 +4487,9 @@ class Storm_match_pdf(Fetch_Propability):
                 return 1e15 # marker for fetchces that are either out of the longitudinal boundary
 
 
-        def timedist_to_max(max_time, timestamp):
+        def timedist_to_max(max_time, timestamp, cspeed=10):
             dt_time=(timestamp.astype('M8[h]') - np.datetime64( max_time.astype('M8[h]').item() ) ).astype('m8[s]')/np.timedelta64(1, 's') # in seconds
-            cyclones_speed=20.0 # m/s # assuming a mean cyclones speed of 80 km/h = 22 m/s
+            cyclones_speed=cspeed # m/s # assuming a mean cyclones speed of 80 km/h = 22 m/s
             dt = dt_time* cyclones_speed
             return dt
 
@@ -4416,49 +4505,49 @@ class Storm_match_pdf(Fetch_Propability):
 
         FT['propability_coast']=FT.apply(lambda row: get_prob_at_coast(self.data['fetchPDF'],row['timestamp'], row['rad_dist'] , row['topo_flag'], row['wspeed_long'], long_boundaries )    , axis=1)
         FT['combined_propability_coast']=FT['propability_coast']*FT['non_dim_fetch']
-        FT['combined_propability_coast'][FT['propability'] < prop_tresh] = 0
+        FT['combined_propability_coast'][FT['propability_coast'] < prop_tresh] = 0
 
 
         FT['dist_to_max']=FT.apply(lambda row: min_dist(pos.radius.data, pos.time.data, row['rad_dist'] , row['timestamp'] , row['wspeed_long'], long_boundaries )    , axis=1)
 
         FT['raddist_to_max']  = pos.radius.data-FT['rad_dist']
-        FT['timedist_to_max'] = FT.apply(lambda row: timedist_to_max(pos.time.data, row['timestamp'] )    , axis=1)
+        FT['timedist_to_max'] = FT.apply(lambda row: timedist_to_max(pos.time.data, row['timestamp'], cspeed=cylone_speed  )    , axis=1)
 
         if (sum(FT['combined_propability'] !=0) != 0):
             prop_match=True
-            #print('proparbility match is'+ str(prop_match) )
             best_fetch_loc=FT['combined_propability'].values.argmax()
 
+            best_fetch_index=FT.iloc[best_fetch_loc].name
+
+            best_fetch=FT.iloc[best_fetch_loc]
+            best_CID=FT.iloc[best_fetch_loc]['CID']
+            best_fetchID=FT.iloc[best_fetch_loc]['fetchID']
+
+            print('proparbility match is '+ str(prop_match) )
         else:
+
             prop_match=False
+            print('proparbility match is '+ str(prop_match) )
+            # only take values that are not over land
 
-            #print(FT['topo_flag'])
-            # topo_flag = true for fetches over ocean!
+            # take only fetches that are over oceans
+            FT_subsample    =   FT[FT['topo_flag'] == True]
 
-            #print(FT[FT['topo_flag']]['dist_to_max'])
-            # find minimum radial distance that is not over land.
-            kk=FT[FT['topo_flag']]['dist_to_max'].idxmin()
-            best_fetch_loc=FT.index.get_loc(kk)
+            print('under all fetches iloc ' + str(FT['dist_to_max'].values.argmin()) )
+            print('under topo_flag == True fetches iloc ' + str(FT_subsample['dist_to_max'].values.argmin() ) )
 
-            # find minimum radial distance that could be over land
-            #best_fetch_loc=FT['dist_to_max'].values.argmin()
 
-        #print(type(best_fetch_loc))
-        #if ~((type(best_fetch_loc) == np.int64) | (type(best_fetch_loc) == int)):
-        print('proparbility match is '+ str(prop_match) )
-        if ((type(best_fetch_loc) is list) or (type(best_fetch_loc) is np.ndarray)):
-            print(' best position is a list or array ')
-            ain=np.arange(len(best_fetch_loc))
-            best_fetch_loc=int(np.round(ain[best_fetch_loc].mean()))
+            best_fetch_loc  =   FT_subsample['dist_to_max'].values.argmin()
+            #best_fetch_loc =   FT['dist_to_max'].values.argmin()
 
-        print('best position:' + str(best_fetch_loc))
-        print(' ----------')
+            best_fetch_index=   FT_subsample.iloc[best_fetch_loc].name
 
-        best_fetch_index=FT.iloc[best_fetch_loc].name
+            best_fetch      =   FT_subsample.iloc[best_fetch_loc]
+            best_CID        =   FT_subsample.iloc[best_fetch_loc]['CID']
+            best_fetchID    =   FT_subsample.iloc[best_fetch_loc]['fetchID']
 
-        best_fetch=FT.iloc[best_fetch_loc]
-        best_CID=FT.iloc[best_fetch_loc]['CID']
-        best_fetchID=FT.iloc[best_fetch_loc]['fetchID']
+            print(FT_subsample.iloc[best_fetch_loc])
+
 
         best_fetch_evolution=FT[(FT['CID'] == best_CID) & (FT['fetchID'] == best_fetchID) ]
         best_fetch_evolution.reset_index(inplace=True)
@@ -4524,9 +4613,10 @@ class Storm_match_pdf(Fetch_Propability):
 
         return best_CID, best_fetch_index, best_fetch_evolution, prop_match, coast_dict
 
-def generate_radial_coords(trackdict, station_pos):
 
-    for CID, Track in trackdict.iteritems():
+def generate_radial_coords(trackdict, station_pos):
+    import m_earth_geometry as M_geo
+    for CID, Track in trackdict.items():
         # calculate radial distance to Station.
         Track.data['Radial_to_S']    =Track.data.apply(lambda row:   M_geo.haversine(   station_pos[0],   station_pos[1], row['long'], row['lat'] ) *1000.0    , axis=1) # Haversine formula returns km
         Track.data['Angle_from_S']   =Track.data.apply(lambda row:   M_geo.bearing(   station_pos[0],   station_pos[1], row['long'], row['lat'] )    , axis=1) # Bering in degree deviation from north
@@ -4534,6 +4624,8 @@ def generate_radial_coords(trackdict, station_pos):
         trackdict[CID]=Track
 
     return trackdict
+
+
 
 def plot_matched_fetches(sm_pdf, best_fetch, rqlims=(0.001, 0.999), tqlim=(.01,.99), col=None, no_limits=False):
 

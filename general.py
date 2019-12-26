@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 sys.path.append('/home/lbaratgin/work/modules/stormy_forerunners/')
-import tools as MT
+from . import tools as MT
 
 import matplotlib.pyplot as plt
 import datetime as DT
@@ -158,7 +158,7 @@ class plot_spectrogram(object):
                 import numpy as np
                 import sys
                 sys.path.append('/home/lbaratgin/work/modules/stormy_forerunners/')
-                import tools as MT
+                #from . import tools as MT
 
                 shading='gouraud' if shading is True else 'flat'
                 fig_size=[10,4] if fig_size is None else fig_size

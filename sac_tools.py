@@ -3,7 +3,7 @@ import numpy as np
 import os,sys
 
 from obspy import read, read_inventory
-import stormy_forerunners.tools as MT
+from . import tools as MT
 
 def sac_load_all(path, noplot=None):
 	st = read(path)

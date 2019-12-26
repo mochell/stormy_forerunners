@@ -6,12 +6,13 @@ from __future__ import division
 import numpy as np
 #import m_general as M
 import matplotlib.pyplot as plt
-import general as M
+from . import general as M
 
-from mpl_toolkits.basemap import Basemap,cm, shiftgrid
 
 class NorthPacific_map(object):
     def __init__(self, data, lat, lon, clevs,view_scale=None, unit=None, cmap=None):
+        from mpl_toolkits.basemap import Basemap,cm
+
         view_scale=view_scale if view_scale is not None else 0.5
         unit=unit if unit is not None else 'no unit'
 
@@ -85,6 +86,7 @@ class NorthPacific_map(object):
 
 class Pacific_map(object):
     def __init__(self, data, lat, lon, clevs,view_scale=None, unit=None, cmap=None):
+        from mpl_toolkits.basemap import Basemap,cm
         view_scale=view_scale if view_scale is not None else 0.5
         unit=unit if unit is not None else 'no unit'
 
